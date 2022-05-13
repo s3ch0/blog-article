@@ -395,46 +395,86 @@ reset
 ## 本地提权
 
 
-首先我们知道 wordpress 里有一些配置文件,而配置文件里面有一些关于数据库啥的信息，很有可能对我们渗透有帮助
 
 
-这个时候我就想通过wordpress 的配置文件的来获取一些能够帮助我们提权的信息如密码之类的
-其配置文件在 wordpress 主目录下
-名字为 `wp-config.php`
+然后我们按照惯例我先查询一下该靶机内有啥用户是拥有命令行
 
-![20220508_0252.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/72f5325daeb979c5a8917f816db6c0b4.png)
-
-发现里面有个用户名和密码
-经过尝试，发现该密码并不正确
-
-我们发现登入web界面的密码 adam14
-
-flag1
-153495edec1b606c24947b1335998bd9
-
-flag2 
-7efd721c8bfff2937c66235f2d0dbac1
-
-
-
-
-
-按照惯例我先查询一下该靶机内有啥用户是拥有命令行
 
 ![20220508_0247.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/fbc7e01ecf11ff2f07ba804fd037abcc.png)
 
+这时候我们可以去对应用户的家目录，进去之后我们发现有一个 local.txt 我们对该文件进行查看之后发现，我们并没有该文件的权限
+
 ![20220508_0248.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/dc74b03a46acc58c0e9d534a36f8e889.png)
 
+这个时候我就想我们是否能够通过wordpress 的配置文件的来获取一些能够帮助我们提权的信息如密码之类的
+
+
+其配置文件在 wordpress 主目录下
+名字为 `wp-config.php`
+
+
+![20220508_0252.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/72f5325daeb979c5a8917f816db6c0b4.png)
+首先我们很容易发现该文件信息是关于数据库的.然后我们可以根据上面的信息来尝试登入 Mysql 
+
+![20220508_0254_1.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/2cb3c3bc5c1bc9b8c29be69387c8479c.png)
+
+发现登入失败
+然后我们在使用该密码去尝试用户登入
 ![20220508_0249.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/dcf48353400afcc637b25fa88ea2cfb4.png)
 
 
 ![20220508_0254.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/8884f27c975add74725d2d0e6c6e62d2.png)
-![20220508_0254_1.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/2cb3c3bc5c1bc9b8c29be69387c8479c.png)
+发现都失败了
+
+这时候我们就有陷入了僵局，当我们陷入僵局时，我们应该对我们所搜集的所有关于靶机信息都整理一遍，我们发现在进入主机之前，我们还有获得过一个密码 adam14 <font color="red" face=Monaco size=3> 在真实渗透环境中，在每个需要密码验证的入口我们都应该尝试我们已经获取到的密码 </font> 
+
+我们对该使用该密码进行尝试，发现真的成功进入 ! ! !
+
+
 ![20220508_0257.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/d23df4e202536ffa1a17729285c3a37a.png)
+这时候我们就从刚才的 www-data 用户切换到了 wpadmin 我们进入到其家目录 查看 local.txt 成功获得第一个 Flag: `153495edec1b606c24947b1335998bd9`
+
 ![20220508_0258.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/49d21e633bd3b0a54b74b030f13ffdb5.png)
+
+flag2 
+
+
+
+
+
+
+
+
+
+### Mysql 提权
+
+这时候我们查看 sudo 权限列表 发现Mysql 命令不需要密码就能以 Root 权限来运行
+
 ![20220508_0258_1.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/7e4d45f43be585e361f9ddbd80808ca5.png)
+
+
+```bash
+sudo /usr/bin/mysql -u root -D wordpress -p
+```
+密码还是web页面那个密码 adam14
+
+发现成功使用 sudo 权限执行了 MySQL
 
 ![20220508_0259.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/035277e96c4d3a3b1c8ac2e0c5293d33.png)
 
+我们知道在 MySQL 内也能执行外部的系统Shell命令,只需要在前面加上 system 就行
+
+```sql
+system id        -- 执行id命令
+\! /bin/bash     -- 另一种写法
+system /bin/bash -- 获得root 权限的shell
+
+```
+我们成功通过 MySQL 提权到 Root 权限
 
 ![20220508_0302.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/1335ba8a84296213a3fb9371fa85f24b.png)
+
+查看root 家目录的 proof.txt 文件内容 成功获得第二个 Flag:`7efd721c8bfff2937c66235f2d0dbac1`
+
+<font color="green" face=Monaco size=4>至此这台靶机的渗透过程已经全部结束 </font>
+
