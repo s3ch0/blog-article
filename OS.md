@@ -67,12 +67,52 @@
 
 ## 操作系统的状态机模型
 
++ 软件和硬件的桥梁
++ 操作系统的加载和初始化
++ AbstractMachine 代码导读
+
+> OSLabs
+
++ <font color="red" face=Monaco size=3> Lab0 (amgame): 熟悉代码框架 </font>
++ **Lab1 (pmm):** `Physical memory management`
+	+ 多处理器 (bare-metal) 上的 kalloc/free
++ **Lab2 (kmt):** `Kernel multi-threading`
+	+ 中断和异常驱动的上下文 (线程) 切换
++ **Lab3 (uproc):** `User processes`
+	+ 虚拟地址空间、用户态进程和系统调用
++ **Lab4 (vfs):** `Virtual file system`
+	+ devfs, procfs, 简单的文件系统；ELF 加载器
+
+### 硬件和软件的桥梁
+
+我们已经知道如何写一个 “最小” 的 C 程序了：
+minimal.S
+
+不需要链接任何库，就能在操作系统上运行
+
+“程序 = 状态机” 没问题
+
+带来更多的疑问
+
+但谁创建的这个状态机？？？
+
+当然是操作系统了……呃……
+
+<font color="red" face=Monaco size=3>  这个程序可以在没有操作系统的硬件上运行吗？
+ </font>
+
+“启动” 状态机是由 “加载器” 完成的
+
+加载器也是一段程序 (状态机)
+
+这个程序由是由谁加载的？
 
 
 ## 状态机模型的应用
 
 
 ## 操作系统上的进程
+
 
 
 ## 进程的地址空间

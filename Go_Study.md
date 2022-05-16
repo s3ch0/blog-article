@@ -1,5 +1,7 @@
 
-<img alt="Gif" src="./8e47d5771265fc25e4a0bf9f1c8ad463.gif" width="60%" />
+
+<img alt="Gif" src="http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/2313c11438a85401442bd2ef7252959a.gif" width="100%" />
+
 
 ## 环境搭建
 
