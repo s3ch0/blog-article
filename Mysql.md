@@ -1,0 +1,1496 @@
+## MYSQL
+
+### 基本概念
+
+```SHELL
+YUM INSTALL LIBCURL-DEVEL # 安装网络相关的依赖项
+```
+
+**编程语言: SQL --- 结构化查询语言**
+
++ DDL 数据定义语言 --- ` /CREATE / DROP / ALTER`
++ DML 数据操作语言 --- ` /INSERT / DELETE / UPDATE / SELECT`
++ DCL 数据控制语言 --- `/GRANT / REVOKE`
+
+保证数据的完整性和一致性
+
+<FONT COLOR=RED>完整性:</FONT>
+
+1. 实体完整性  --- 每一个实体都是独一无二的,没有冗余 --- 主键/唯一索引
+2. 参照完整性  --- 外键
+3. 域完整性     --- 存储的数据都是有效的数据 - 数据类型/数据长度/非空约束/默认值约束/检查约束
+
+
+
+<FONT COLOR=RED>一致性:</FONT>
+
+1. 事务 --- 要么全成功要么全失败,操作不可分割 --- ACID特性
+   + A    - `ATOMICITY`        --- 原子性 -- 不可分割
+   + C    - `CONSISTENCY`   --- 一致性 -- 事物前后数据的状态要一致
+   + I     - `ISOLATION`         --- 隔离性 -- 并发的多个事务不知道彼此的中间状态
+   + D    - `DURATION`        --- 持久性 -- 事务完成后数据要做持久化
+
+
+
+### 基本操作
+
+查看`MYSQL`的版本
+
+```SQL
+SELECT VERSION();
+```
+
+密码相关：
+
+```SQL
+-- MYSQL 默认没有密码认证
+UPDATE USER SET PASSWORD=PASSWORD('123.COM') WHERE USER='ROOT';
+FLUSH PRIVILEGES
+-- 查看密码
+USE MYSQL
+SELECT USER,PASSWORD,HOST FROM USER;
+# 如果修改不生效,可试着使用以下方法
+# MYSQL 认证使用的方法是 UNIX_SOCKET，把其改成 MYSQL_NATIVE_PASSWORD 即可
+MARIADB [(MYSQL)]>UPDATE USER SET PLUGIN="MYSQL_NATIVE_PASSWORD";
+```
+
+KALI里对外开放数据库的步骤,与问题集合
+
+
+```SHELL
+1. 修改服务端配置(50-SERVER.CNF)
+# 将只对本地开放的:  BIND-ADDRESS       = 127.0.0.1 注释掉
+2. 然后你会发现本地登不了MYSQL了,这个时候可以再配置里 [MARIADB] 下加上 SKIP-GRANT-TABLES  # 跳过权限检查
+VIM ETC/MYSQL/MARIADB.CONF.D/50-SERVER.CNF
+```
+
+---
+
+**SQL语句的注释: ` --`**
+
+#### 数据库的操作
+
+#####创建数据库
+
+```MYSQL
+CREATE DATABASE SCHOOL DEFAULT CHARSET UTF8;# (UTF8 不要加 -)  (UTF8MB4 还能存储图片字符[表情包啥的])
+# 创建名为SCHOOL的数据库,并指定编码集为UTF-8
+SHOW CREATE DATABASE SCHOOL; 
+# 显示创建过程
+```
+
+#####删除数据库
+
+```MYSQL
+DROP DATABASE SCHOOL; 
+DROP DATABASE IF EXISTS SCHOOL;
+```
+
+#####切换数据库
+
+```SQL
+USE SCHOOL
+```
+
+```SQL
+# 这种方式只能在使用 MYSQL终端连接时才有效，MYCLI 不支持！
+? DATA TYPES;  # 查看数据库里支持哪些数据类型
+? INT; # 查看相应数据类型的介绍
+? FUNCTIONS; # 查看MYSQL里支持什么函数
+
+```
+
+#####查看当前数据库有哪些表
+
+```SQL
+ SHOW TABLES;
+```
+
+#### 表的操作
+
+#####创建表
+
+```SQL
+-- 创建学生表
+CREATE TABLE TB_STUDENT  -- 一般都会加一个前缀TB
+(
+STUID INT NOT NULL,  -- 创建学号(并限定不为空)
+STUNAME VARCHAR(20) NOT NULL, -- 创建学生姓名
+STUSEX BIT DEFAULT 1, -- 创建学生性别(默认为1)
+STUBIRTH DATE,
+PRIMARY KEY (STUID)  -- 设置主键位为学号(就是一个学号代表一个学生)
+
+);
+
+-- AUTO_INCREASE 自增属性
+```
+
+
+
+
+
+#####<FONT COLOR=RED>查看列的信息</FONT>
+
+```SQL
+-- 查看基础的列信息
+SHOW COLUMNS FROM TB_STUDENT;
+DESC TB_STUDENT;
+-- 查看完整，详细的列信息（如COMMENT 的信息，权限等等）
+SHOW FULL COLUMNS FROM TB_STUDENT;
+
+```
+
+
+
+#####删除表
+
+```SQL
+DROP TABLE IF EXISTS TB_STUDENT;
+```
+
+#####添加/删除列
+
+```SQL
+ALTER TABLE TB_STUDENT ADD COLUMN STUADDR VARCHAR(255);  # 增加一列(STUADDR)
+ALTER TABLE TB_STUDENT DROP COLUMN STUADDR;              # 删除(STUADDR)列
+ALTER TABLE TB_STUDENT ADD COLUMN ADMISSIONTIME DATE AFTER STUID 
+# 添加ADMISSIONTIME这一列到STUID的后面(指定插入的位置) 
+```
+
+#####修改表(改名)
+
+```SQL
+ALTER TABLE PERSON RENAME TO TB_PERSON;
+```
+
+#####修改列
+
+```SQL
+-- 下
+ALTER TABLE TB_STUDENT CHANGE COLUMN STUADDR STUADDR VARCHAR(511);
+
+```
+
+#####插入数据
+
+```SQL
+# INTO 可以省略 并且字符串类型的最好用单引号,而不要用双引号
+INSERT INTO TB_STUDENT VALUES (1001,'ZHOUHAOBUSY',1,'1000-1-1','花果山');
+# ERROR 因为学号被设为了主键位,一个学号就代表了一个学生
+INSERT INTO TB_STUDENT VALUES (1001,'ZHOUHAO',1,'1000-1-1','花果山');
+# 可以通过指定列名来添加数据
+INSERT INTO TB_STUDENT (STUID,STUNAME) VALUES (1002,'MARK');
+INSERT INTO TB_STUDENT (STUSEX,STUID,STUNAME) VALUES (0,1003,'ALICE');
+# 可以一次性添加多个学生
+INSERT INTO TB_STUDENT (STUID,STUNAME,STUSEX) VALUES 
+(1004,'POWERSHELL',DEFAULT),
+(1005,'CMD',1),
+(1006,'SHELL',0);
+
+```
+
+#####查看表对应的列的信息
+
+```SQL
+ DESC USERS; #  
+```
+
+#####截断表(删除全表)
+
+```SQL
+TRUNCATE TABLE TB_STUDENT;
+```
+
+#####删除学生
+
+```SQL
+# 删除学号为1002的学生
+DELETE FROM TB_STUDENT WHERE STUID=1002;
+
+# 删除所有女学生
+DELETE FROM TB_STUDENT WHERE STUSEX=0
+```
+
+#####更新操作
+
+```SQL
+# 同时修改学号为1007的生日和地址
+UPDATE TB_STUDENT SET STUBIRTH='1998-12-30',STUADDR='CHINA' WHERE STUID=1007;
+# 同时修改学号为1005,1006学生的地址(SET后面接等于号为赋值,无SET后的等于号为比较)
+UPDATE TB_STUDENT SET STUADDR='AMERICAN' WHERE STUID=1005 OR STUID=1006;
+UPDATE TB_STUDENT SET STUADDR="AMERICAN" WHERE STUID IN (1005,1006);
+
+ 
+```
+
+#####添加外键约束
+
+修改学生表并添加外键约束 --- (参照完整性)
+
+```SQL
+MAKE SURE COLUMNS ARE IDENTICAL(OF SAME TYPE) AND IF REFERENCE COLUMN IS NOT PRIMARY_KEY, MAKE SURE IT IS INDEXED.
+```
+
+
+
+```SQL
+ALTER TABLE TB_STUDENT ADD CONSTRAINT FK_STUDENT_COLID FOREIGN KEY (COLID) REFERENCES TB_COLLEGE (COLID);
+```
+
+##### 添加唯一性约束
+
+ (一个学生选某个课程只能选一次)
+
+```SQL
+ALTER TABLE TB_SCORE ADD CONSTRAINT UNI_SCORE_STUID_COUID UNIQUE (STUID,COUID);
+```
+
+---
+
+### 搭建环境
+
+> **创建第一个数据库** 
+
+```SQL
+DROP DATABASE IF EXISTS SCHOOL;
+-- 创建名为SCHOOL的数据库并设置默认的字符集和排序方式
+CREATE DATABASE SCHOOL DEFAULT CHARSET UTF8 COLLATE UTF8_BIN;
+-- 切换到SCHOOL 数据库上下文环境
+USE SCHOOL;
+-- 创建学院表
+CREATE TABLE TB_COLLEGE
+(
+COLLID INT NOT NULL AUTO_INCREMENT COMMENT '编号',
+COLLNAME VARCHAR(50) NOT NULL COMMENT '名称',
+COLLMASTER VARCHAR(20) NOT NULL COMMENT '院长',
+COLLWEB VARCHAR(511) DEFAULT '' COMMENT '网站',
+PRIMARY KEY (COLLID)
+);
+
+-- 创建学生表
+CREATE TABLE TB_STUDENT
+(
+STUID INT NOT NULL COMMENT '学号',
+STUNAME VARCHAR(20) NOT NULL COMMENT '姓名',
+STUSEX BIT DEFAULT 1 COMMENT '性别',
+STUBIRTH DATE NOT NULL COMMENT '出生日期',
+STUADDR VARCHAR(255) DEFAULT '' COMMENT '籍贯',
+COLLID INT NOT NULL COMMENT '所属学院',
+PRIMARY KEY (STUID),
+FOREIGN KEY (COLLID) REFERENCES TB_COLLEGE (COLLID)
+);
+
+
+-- 创建教师表
+CREATE TABLE TB_TEACHER
+(
+TEAID INT NOT NULL COMMENT '工号',
+TEANAME VARCHAR(20) NOT NULL COMMENT '姓名',
+TEATITLE VARCHAR(10) DEFAULT '讲师' COMMENT '职称',
+COLLID INT NOT NULL COMMENT '所属学院',
+PRIMARY KEY (TEAID),
+FOREIGN KEY (COLLID) REFERENCES TB_COLLEGE (COLLID)
+);
+
+-- 创建课程表
+CREATE TABLE TB_COURSE
+(
+COUID INT NOT NULL COMMENT '编号',
+COUNAME VARCHAR(50) NOT NULL COMMENT '名称',
+COUCREDIT INT NOT NULL COMMENT '学分',
+TEAID INT NOT NULL COMMENT '授课老师',
+PRIMARY KEY (COUID),
+FOREIGN KEY (TEAID) REFERENCES TB_TEACHER (TEAID)
+);
+
+
+
+-- 创建选课记录表
+CREATE TABLE TB_SCORE
+(
+SCID INT AUTO_INCREMENT COMMENT '选课记录编号',
+STUID INT NOT NULL COMMENT '选课学生',
+COUID INT NOT NULL COMMENT '所选课程',
+SCDATE DATETIME COMMENT '选课时间日期',
+SCMARK DECIMAL(4,1) COMMENT '考试成绩',
+PRIMARY KEY (SCID),
+FOREIGN KEY (STUID) REFERENCES TB_STUDENT (STUID),
+FOREIGN KEY (COUID) REFERENCES TB_COURSE (COUID)
+);
+-- 添加唯一性约束(一个学生选某个课程只能选一次)
+ALTER TABLE TB_SCORE ADD CONSTRAINT UNI_SCORE_STUID_COUID UNIQUE (STUID,COUID);
+  
+
+```
+
+> **插入环境数据**
+
+```SQL
+-- 插入学院数据
+INSERT INTO TB_COLLEGE
+(COLLNAME,COLLMASTER,COLLWEB) VALUES
+('计算机学院','左冷禅','HTTP://WWW.ABC.COM'),
+('外国语学院','岳不群','HTTP://WWW.XYZ.COM'),
+('经济管理学院','风清扬','HTTP://WWW.FOO.COM');
+
+-- 插入学生数据
+INSERT INTO TB_STUDENT
+(STUID,STUNAME,STUSEX,STUBIRTH,STUADDR,COLLID) VALUES
+(1001,'向问天',1,'1990-3-4','四川成都',1),
+(1002,'任我行',1,'1992-2-2','湖南长沙',1),
+(1033,'任盈盈',0,'1989-12-3','湖南长沙',1),
+(1572,'余沧海',1,'1993-7-19','四川成都',1),
+(1378,'岳灵珊',0,'1995-8-12','四川绵阳',1),
+(1954,'林平之',1,'1994-9-20','福建莆田',1),
+(2035,'令狐冲',1,'1988-6-30','陕西咸阳',2),
+(3011,'林震南',1,'1985-12-12','福建莆田',3),
+(3755,'龙傲天',1,'1993-1-25','广东东莞',3),
+(3923,'向天问',0,'1985-4-17','四川成都',3);
+
+-- 插入教师数据
+INSERT INTO TB_TEACHER
+(TEAID,TEANAME,TEATITLE,COLLID) VALUES
+(1122,'张三丰','教授',1),
+(1133,'宋远桥','副教授',1),
+(1144,'杨逍','副教授',1),
+(2255,'范遥','副教授',2),
+(3366,'韦一笑','讲师',3);
+
+-- 插入课程信息
+INSERT INTO TB_COURSE 
+(COUID,COUNAME,COUCREDIT,TEAID) VALUES
+(1111,'PYTHON程序设计',3,1122),
+(2222,'WEB前端开发',2,1122),
+(3333,'操作系统',4,1122),
+(4444,'计算机网络',2,1133),
+(5555,'编译原理',4,1144),
+(6666,'算法与数据结构',3,1144),
+(7777,'经贸法语',3,2255),
+(8888,'成本会计',2,3366),
+(9999,'审计',3,3366);
+
+
+-- 插入选课数据
+INSERT INTO TB_SCORE (STUID, COUID, SCDATE, SCMARK) VALUES 
+(1001, 1111, '2017-09-01', 95),
+(1001, 2222, '2017-09-01', 87.5),
+(1001, 3333, '2017-09-01', 100),
+(1001, 4444, '2018-09-03', NULL),
+(1001, 6666, '2017-09-02', 100),
+(1002, 1111, '2017-09-03', 65),
+(1002, 5555, '2017-09-01', 42),
+(1033, 1111, '2017-09-03', 92.5),
+(1033, 4444, '2017-09-01', 78),
+(1033, 5555, '2017-09-01', 82.5),
+(1572, 1111, '2017-09-02', 78),
+(1378, 1111, '2017-09-05', 82),
+(1378, 7777, '2017-09-02', 65.5),
+(2035, 7777, '2018-09-03', 88),
+(2035, 9999, NOW(), NULL),
+(3755, 1111, CURDATE(), NULL),
+(3755, 8888, CURDATE(), NULL),
+(3755, 9999, '2017-09-01', 92);
+```
+
+
+
+> **创建第二个数据库**
+
+```SQL
+
+
+```
+
+
+
+> **插入数据**
+
+```SQL
+
+
+```
+
+
+
+
+
+
+
+### ==SQL查询==
+
+
+
+#### 窗口函数
+
+`MYSQL 8 ` 有窗口函数 `ROW_NUMBER() / RANK() / DENSE_RANK()` 
+
++ `ROW_NUMBER()`
++ `RANK()`
++ `DENSE_RANK()`
+
+使用:
+
+```SQL
+RANK() OVER(ORDER BY SAL DESC) AS `RANK`
+```
+
+
+
+
+
+
+
+#### SQL练习
+
+
+
+> 时间相关
+
+```SQL
+
+YEAR() 返回年份（月份以下会清除）
+CEIL() 向上取整
+ROUND() 四舍五入
+ROUND(AVG(SCMARK),1) # 保留一位小数
+FLOOR() 向下取整
+FLOOR(1.23) FLOOR(-1.23) # 1 ,  -2 
+DATEDIFF() 将两日期想减
+-- 常用
+CEIL(DATEDIFF(NOW(),BIRDATE)/365)
+CEIL(DATEDIFF('2020-03-01',BIRDATE)/365)
+2020-YEAR(BIRDATE)
+
+SELECT NOW() FROM DUAL; # SELECT NOW() 查看当前时间 精确到秒
+SELECT CURDATE() FROM DUAL; # 查看当前日期（精确到到日）
+
+SELECT STUNAME MIN(STUBIRTH) AS 生日 FLOOR(DATEDIFF(CURDATE(),MIN(STUBIRTH))/365) AS 年龄 FROM TB_STUDENT #
+```
+
+
+
+统计学
+
++ 描述性统计：能拿到全量数据
+  1. 集中趋势：均值，中位数，众数
+  2. 离散趋势：极差（PTP），方差，标准差
+  3. 相关性：协方差，相关系数（SPEARMAN，PEARSON，KINDALL）
++ 推断性统计
+  1. `T`检测和`F`检测：样本的均值和方差能不能代表总体的均值和方差
+  2. 方差分析：检测数据的改变是否是随机波动造成的，是否具体显著性
+
+
+
+SQL中获取数据的描述性统计信息的函数
+
+`SUM / AVG / MIN / MAX / COUNT / STD / VAR`
+
+---
+
+##### 练习一
+
+> **数据为第一个数据库**
+
+1. 查询所有学生信息
+
+```SQL
+SELECT * FROM TB_STUDENT;
+```
+
+2. 查询所有课程名称及学分(投影和别名)
+
+```SQL
+SELECT COUNAME,COUCREDIT FROM TB_COURSE; -- AS 是ALIAS的缩写
+```
+
+3. 查询所有学生的姓名和性别
+
+```SQL
+SELECT STUNAME AS 姓名, CASE STUSEX WHEN 1 THEN '男' ELSE '女' END AS 性别 FROM TB_STUDENT ; 
+SELECT STUNAME AS 姓名, CASE STUSEX WHEN 1 THEN '男' WHEN 0 THEN '女' ELSE '其他' END AS 性别 FROM TB_STUDENT ; 
+
+# 下面这种方式只适用于MYSQL
+SELECT STUNAME AS 下 ,IF(STUSEX,'男','女') AS 性别 FROM TB_STUDENT
+```
+
+4. 查询所有女学生的姓名和出生日期(筛选)
+
+```SQL
+SELECT STUNAME ,STUBIRTH FROM TB_STUDENT WHERE STUSEX=0;
+```
+
+5. 查询所有80后学生的姓名,性别和出生日期(筛选)
+
+```SQL
+SELECT STUNAME, STUSEX , SEUBIRTH FROM TB_STUDENT WHERE STUBIRTH>='1980-1-1' AND
+STUBIRTH<='1989-12-31';
+SELECT STUNAME,STUSEX,STUBIRTH FROM TB_STUDENT WHERE STUBIRTH BETW '1980-1-1' AND '1989-12-31';
+```
+
+查询姓"杨"的学生的姓名和性别(模糊)
+
+```SQL
+SELECT STUNAME , STUSEX FROM TB_STUDENT WHERE STUNAME LIKE '杨%';
+```
+
+查询名字中"不"字或"嫣"字的学生的姓名(模糊)
+
+```SQL
+SELECT STUNAME , STUSEX FROM TB-STUDENT WHERE STUNAME LIKE '%不%' OR STUNAME LIKE '%嫣%'; -- '%' 代表0个或多个
+```
+
+查询姓"杨"名字为三个字的学生的姓名和性别(模糊)
+
+```SQL
+SELECT STUNAME ,STUSEX FROM TB_STUDENT WHERE STUNAME LIKE '杨__';
+```
+
+查询录入了家庭住址的学生的姓名(空值)
+
+```SQL
+SELECT STUNAME FROM TB_STUDENT WHERE STUADDR IS NOT NULL
+```
+
+查询学生的家庭住址(去重)
+
+```SQL
+SELECT DISTINCT STUADDR FROM TB_STUDENT WHERE STUADDR IS NOT NULL;
+-- 这边不能用'='号和不等于号'<>'(在SQL里不等于号为<>,PYTHON2早期也是这个符号)来判断是否为空
+```
+
+
+
+ 查询男学生的姓名和生日按年龄从大到小排列(排序)
+
+```SQL
+-- ASC - ASCENDING - 升序 (从小到大)
+-- DESC - DESCENDING - 降序 (从大到小)
+SELECT STUNAME ,STUBIRTH FROM TB_STUDENT WHERE STUSEX=1 ORDER BY STUBIRTH ASC;
+-- MYSQL特有语句
+SELECT STUNAME , YEAR(NOW()) - YEAR(STUBIRTH) AS 年龄 FROM TB_STUDENT WHERE STUSEX=1 ORDER BY STUBIRTH DESCC;
+```
+
+
+
+
+
+查询学生选课的所有日期(去重)
+
+```SQL
+SELECT DISTINCT SCDATE FROM TB_SCORE;
+```
+
+聚合函数: `MAX` (最大值) / `MIN` (最小值) / `COUNT` (计数) / `SUM` (求和) / `AVG` (平均值)
+
+`COUNT(*)` 会将NULL算入其中 `COUNT`里面也可以加 `DISTINCT`
+
+
+
+> 聚合函数在遇到NULL值会做忽略
+
+查询年龄最大学生的出生日期(聚合函数)
+
+```SQL
+SELECT MIN(STUBIRTH) FROM TB_STUDENT
+```
+
+查询出男女中最大年龄的学生的年龄
+
+```SQL
+SELECT STUSEX, MIN(STUBIRTH) FROM TB_STUDENT GROUP BY STUSEX;
+```
+
+
+
+查询年龄最大的学生的姓名(子查询/嵌套查询)
+
+```SQL
+SELECT STUNAME FROM TB_STUDENT WHERE STUBIRTH=(
+SELECT MIN(STUBIRTH) FROM TB_STUDENT);
+```
+
+
+
+查询所有考试的平均成绩
+
+```SQL
+SELECT AVG(SCMARK) FROM TB_SCORE; 
+SELECT SUM(SCMARK) / COUNT(SCORE) FROM TB_SCORE;
+
+SELECT SUM(SCMARK) / COUNT(*) FROM TB_SCORE;  -- 这样做相当于将空值当做0处理
+
+```
+
+
+
+查询年龄最大的学生姓名和年龄(子查询+运算)
+
+```SQL
+SELECT STUNAME AS 姓名 , YEAR(NOW()) - YEAR(STUBIRTH) AS 年龄 FROM TB_STUDENT WHERE STUBIRTH=(SELECT MIN(STUBIRTH) FROM TB_STUDENT);
+```
+
+
+
+查询选了两门以上的课程的学生姓名(子查询/分组条件/集合运算)
+
+```SQL
+SELECT STUNAME FROM TB_STUDENT WHERE STUID IN (
+	SELECT STUID FROM TB_SCORE GROUP BY STUID HAVING
+    COUNT(STUID)>2
+);
+```
+
+
+
+查询男女学生的人数(分组和聚合函数)
+
+```SQL
+-- SELECT COUNT(STUID) FROM TB_STUDENT
+SELECT STUSEX, COUNT(*) FROM TB_STUDENT GROUP BY STUSEX
+```
+
+
+
+查询学号为1001的学生所有课程的平均分(筛选和聚合函数)
+
+```SQL
+SELECT AVG(SCMARK) FROM TB_SCORE WHERE STUID=1001;
+```
+
+
+
+查询每个学生的学号和平均成绩(分组和聚合函数)
+
+```SQL
+SELECT STUID AS 学号, SVG(SCMARK) AS 平均分 FROM TB_SCORE GROUP BY STUID;
+```
+
+
+
+查询平均成绩大于等于90分的学生的学号和平均成绩
+
+```SQL
+SELECT STUID AS 学号 , AVG(SCMARK) AS 平均分 FROM TB_SCORE GROUP BY STUID HAVING 平均分>=90;	
+```
+
++ 分组以前的筛选使用WHERE子句
++ 分组以后的筛选使用HAVING子句
+
+
+
+先筛选,再分组,最后再排序
+
+查询学生姓名,课程名称已经考试成绩
+
+> 查询课程的名称，学分和授课老师的姓名
+
+错误的写法:
+
+```SQL
+SELECT COUNAME,COUCREDIT,TEANAME FROM TB_COURSE,TB_TEACHER;  # 笛卡尔积
+```
+
+正确的写法:
+
+```SQL
+-- 写法一
+SELECT COUNAME,COUCREDIT,TEANAME FROM TB_COURSE,TB_TEACHER WHERE TB_COURSE.TEAID = TB_TEACHER.TEAID;
+-- 写法二 ( 内连接 )
+SELECT COUNAME,COUCREDIT,TEANAME FROM TB_COURSE INNER JOIN TB_TEACHER ON TB_COURSE.TEAID = TB_TEACHER.TEAID;
+SELECT STUNAME, COUNAME,SCMARK FROM TB_STUDENT T1 , TB_COURSE T2,TB_SCORE T3 WHERE T1.STUID=T3.STUID AND T2.COUID=T3.COUID;
+```
+
+查询学生姓名，课程名称，以及成绩（连接查询）
+
+```SQL
+SELECT STUNAME,COUNAME,SCMARK FROM TB_STUDENT,TB_SCORE,TB_COURSE WHERE TB_STUDENT.STUID=TB_SCORE.STUID AND TB_COURSE.COUID = TB_SCORE.COUID AND SCMARK IS NOT NULL;
+
+-- 内连接
+SELECT STUNAME,COUNAME,SCMARK FROM TB_STUDENT  T1 
+INNER JOIN TB_SCORE T2 ON T1.STUID=T2.STUID
+INNER JOIN TB_COURSE T3 ON T2.COUID = T3.COUID WHERE SCMARK IS NOT NULL;    
+```
+
+==查询选课学生的姓名和平均成绩==
+
+```SQL
+SELECT STUNAME,AVG_SCORE FROM TB_STUDENT,
+(SELECT STUID ,ROUND(AVG(SCMARK),1) AS AVG_SCORE FROM TB_SCORE GROUP BY STUID) TB_TEMP
+WHERE TB_STUDENT.STUID = TB_TEMP.STUID;
+```
+
+
+
+
+
+单表: 65535T
+
+单列: 4G - LONGBLOB (BINARY LARGE OBJECT) /LONGTEXT
+
+查询选课学生的姓名和平均成绩(子查询和连接查询)
+
+
+
+外连接(OUTER JOIN) : 左外连接 / 右外连接 / 全外连接
+
+LEFT OUTER JOIN / RIGHT OUTER JOIN / FULL OUTER JOIN
+
+```SQL
+# 查询每个学生的姓名和选课数量(左外连接和子查询)
+SELECT STUNAME , IFNULL(TOTAL,0) FROM TB_STUDENT T1 LEFT OUTER J OIN (SELECT STUID , COUNT(STUID) AS TOTAL FROM TB_SCORE GROUP BY STUID) T2 ON T1.STUID=T2.STUID;
+
+```
+
+
+
+控制显示结果的条数
+
+```SQL
+SELECT STUNAME , COUNAME , SCMARK FROM TB_STUDENT T1 INNER JOIN TB_SCORE T3 ON T1.STUID=T3.STUID INNER JOIN TB_COURSE T2 ON T2.COUID=T3.COUID WHERE SCMARK IS NOT NULL ORDER BY SCMARK DESC LIMIT 5 OFFSET 10;
+-- LIMIT 代表最多只显示5条信息
+-- OFFSET 代表跳过多少行消息
+```
+
+
+
+
+
+使用EXPLAIN生成执行计划
+
+```SQL
+EXPLAIN SELECT STUID,STUNAME FROM TB_STUDENT WHERE STUID = 1001
+EXPLAIN SELECT STUID,STUNAME FROM TB_STUDENT WHERE STUNAME = '杨逍'
+# 使用EXPLAIN这个关键字来判断查询语句的效率和性能
+```
+
+索引
+
+```SQL
+-- 索引(INDEX)
+-- 索引可以加速查询所有应该在经常用于查询筛选条件的列上建立索引
+-- 索引会使用额外的存储空间而且会让增删改查变得更慢,(因为要更新索引)
+-- 所有不能够滥用索引
+CREATE INDEX IDX_STUDENT_STUNAME ON TB_STUDENT(STUNAME);
+DROP INDEX IDX_STUDENT_STUNAME ON TB_STUDENT;
+```
+
+视图
+
+```SQL
+-- 视图: 查询的快照(简化查询操作)
+-- 通过视图可以将用户的访问权限限制到某些指定的列上
+-- 创建视图
+
+CREATE VIEW VW_INFO AS
+SELECT STUNAME AS '姓名', AVERAGE AS '平均成绩' , STUBIRTH AS '出生日期' , CASE STUSEX WHEN 1 THEN '男' ELSE '女' END AS '性别' FROM TB_STUDENT T1 ,
+(SELECT STUID,AVG(SCMARK) AS 'AVERAGE' FROM TB_SCORE GROUP BY (STUID)) T2 WHERE T1.STUID=T2.STUID ;
+
+SELECT 姓名 , 平均成绩 FROM VW_INFO WHERE 姓名='令狐冲';
+SELECT * FROM VW_INFO;
+
+-- 删除视图
+DROP VIEW VW_INFO;
+```
+
+ 授予权限和召回权限
+
+```SQL
+-- DCL:授予权限(GRANT TO)和召回权限(REVOKE FROM)
+
+-- 创建用户
+CREATE USER 'ZHOUHAO'@'%' IDENTIFIED BY '123.COM';
+'%' 代表连接方可以是任意一台主机
+'192.168.80.3' 可以指定连接方的IP地址
+-- 删除用户
+DROP USER 'ZHOUHAO'@'%';
+```
+
+
+
+赋予权限
+
+```SQL
+GRANT ALL PRIVILEGES ON SCHOOL.* TO 'ZHOUHAO'@'%'
+-- 将SCHOOL数据库的所有权限给'ZHOUHAO'这个用户
+
+
+```
+
+收回权限
+
+```SQL
+REVOKE INSERT,DELETE,UPDATE ON SCHOOL.* FROM 'ZHOUHAO'@'%';
+```
+
+
+
+*事物*
+
+事物 (TRANSACTION)  -- 把多个增删改的操作做成不可分割的原子性操作
+
+(要么全部都做,要么都不做)
+
+两种开启方式
+
+1. START TRANSACTION
+2. BEGIN;
+
+开启事物环境
+
+```SQL
+BEGIN;
+DELETE FROM TB_STUDENT;
+-- 提交 (事物中的所有操作全部生效)
+COMMIT;
+-- 回滚 (事物中的所有操作全部撤销)
+```
+
+
+
+
+
+
+
+一对一外键关联
+
+```SQL
+CREATE TABLE TB_PERSON
+(
+PID INT AUTO_INCREMENT,
+PNAME VARCHAR(50),
+PRIMARY KEY(PID) 
+)
+CREATE TABLE TB_CARD  -- 用PID建立外键关联
+(
+CID INT AUTO_INCREMENT,
+CNUM CHAR(18) NOT NULL,
+LOC VARCHAR(255) NOT NULL,
+EXPIRE DATE NOT NULL,
+PID INT NOT NULL,
+PRIMARY KEY (CID)
+)
+```
+
+
+
+
+
+> 数据为第二个数据库
+
+##### 练习二
+
+1. 查询月薪最高的员工姓名和月薪
+2. 查询员工的姓名和年薪 `((月薪+补贴)*13)`
+
+3. 查询员工的部门的编号和人数
+4. 查询所有部门的名称和人数
+
+5. 查询月薪最高的员工 ( BOSS 除外 ) 的姓名和月薪
+6. 查询月薪排第二名的员工的姓名和月薪
+7. 查询月薪排第N名的员工的姓名和月薪
+8. 查询月薪超过平均月薪的员工的姓名和月薪
+9. 查询月薪超过其所在部门平均月薪的员工的姓名,部门编号和月薪
+10. 查询部门中月薪最高的人的姓名,月薪和所在部门名称
+11. 查询主管的姓名和职位
+
+提示: 尽量少用 `IN` `NOT IN` 运算 尽量少用 `DISTINCT` 操作
+
+可以使用存在性判断 `( EXISTS / NOT EXISTS )` 替代集合运算和去重操作
+
+
+
+```SQL
+SELECT ENAME,JOB FROM TB_EMP WHERE ENO=ANY(
+SELECT DISTINCT MGR FROM TB_EMP WHERE MGR IS NOT NULL);
+
+SELECT ENAME,JOB FROM TB_EMP WHERE ENO IN (
+SELECT DISTINCT MGR FROM TB_EMP WHERE MGR IS NOT NULL);
+
+-- 优化
+SELECT ENAME,JOB FROM TB_EMP T1 WHERE EXISTS (
+	SELECT 'X' FROM TB_EMP T2 WHERE T1.ENO = T2.MGR
+)
+
+```
+
+
+
+5. 查询月薪排名4-6名的员工排名,姓名和月薪
+
+```SQL
+```
+
+数据库中间件
+
+```
+COBAR --> MYCAT (阿里巴巴) / GAEA (小米) --> 数据库中间件
+	~ 连接池
+	~ 分表分库支持
+	~ 负载均衡
+	~ 连接监控
+	
+```
+
+`LIMIT/OFFSET` 的性能相对较差,在`OFFSET` 的值相对较大时,我们应该先只查主键然后根据主键查别的字段
+
+```SQL
+-- 性能很差
+SELECT XXX,YYY,ZZZ,AAA,BBB FROM TB_TEST ORDER BY SAL DESC LIMIT 1 OFFSET 1000000;
+
+-- 性能相对较好
+SELECT XXX,YYY,ZZZ,AAA,BBB FROM TB_TEST WHERE ID = 
+(SELECT ID FROM TB_TEST ORDER BY SAL DESC LIMIT 1 OFFSET 1000000)
+```
+
+
+
+
+
+
+
+##### LEETCODE
+
+
+
+##### 其他
+
+
+
+### PYTHON操作
+
+```PYTHON
+IMPORT PYMYSQL
+DEF MAIN():
+    # 1创建连接对象
+    CONN = PYMYSQL.CONNECT(HOST='192.168.80.149',PORT=3306,
+                           USER='ROOT',PASSWORD='',
+                           DB='STUDENT',CHARSET='UTF8')
+	TRY:
+        # 2. 获得游标对象
+        WITH CONN.CURSOR() AS CURSOR:
+            # 3. 执行SQL得到结果
+            RESULT = CURSOR.EXECUTE('INSERT INTO TB_DEPT VALUES (90,"销售部","重庆")')
+            IF RESULT ==1:
+                PRINT('EXECUTE SUCCESS!')
+            # 4.操作成功执行提交
+                CONN.COMMIT() # 提交命令(不然不会执行)
+        EXCEPT PYMYSQSL.MYSQLERROR AS ERROR:
+            PRINT(ERROR)
+            # 5.操作失败执行回滚
+            CONN.ROLLBACK()
+        FINALLY:
+            CONN.CLOSE()  # 6.关闭连接释放资源
+    # PRINT(CONN) 返回的为连接对象
+IF __NAME__ == '__MAIN__':
+	MAIN
+```
+
+### 插入数据
+
+
+
+相关表信息
+
+```SQL
+-- MYSQL WORKBENCH FORWARD ENGINEERING
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- SCHEMA MYDB
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- SCHEMA MYDB
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `MYDB` DEFAULT CHARACTER SET UTF8 ;
+USE `MYDB` ;
+
+-- -----------------------------------------------------
+-- TABLE `MYDB`.`TB_PHYSICAL_TEST`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `MYDB`.`TB_PHYSICAL_TEST` (
+  `STUID` VARCHAR(12) NOT NULL COMMENT '学生学号',
+  `STUNAME` VARCHAR(7) NOT NULL COMMENT '学生姓名',
+  `STUSEX` CHAR(1) NOT NULL COMMENT '学生性别',
+  `STUGRADE` TINYINT NOT NULL COMMENT '学生所在年级',
+  `STUCLASS` VARCHAR(45) NULL COMMENT '学生所在班级',
+  `COLLNAME` VARCHAR(25) NULL DEFAULT 0 COMMENT '所在学院名称',
+  `STUHEIGHT` FLOAT NULL DEFAULT 0 COMMENT '学生身高',
+  `STUWEIGHT` FLOAT NULL DEFAULT 0 COMMENT '学生体重',
+  `STUHW_SCORE` TINYINT NULL DEFAULT 0 COMMENT '学生身高体重成绩',
+  `STUVC` INT NULL DEFAULT 0 COMMENT '学生肺活量',
+  `STUVC_SCORE` TINYINT NULL DEFAULT 0 COMMENT '学生肺活量成绩',
+  `STU50R` FLOAT NULL DEFAULT 0 COMMENT '学生50M跑步',
+  `STU50R_SCORE` TINYINT NULL DEFAULT 0 COMMENT '学生50M跑步成绩',
+  `STUSLJ` VARCHAR(45) NULL DEFAULT 0 COMMENT '坐位体前屈',
+  `STUSLJ_SCORE` TINYINT NULL DEFAULT 0 COMMENT '坐位体前屈成绩',
+  `STUSAR` INT NULL DEFAULT 0 COMMENT '坐位体前屈',
+  `STUSAR_SCORE` TINYINT NULL DEFAULT 0 COMMENT '坐位体前屈成绩',
+  `STUSPUPS` INT NULL DEFAULT 0 COMMENT '仰卧起坐/引体向上',
+  `STUSPUPS_SCORE` VARCHAR(45) NULL DEFAULT 0 COMMENT '仰卧起坐/引体向上成绩',
+  `STU1000_800R` FLOAT NULL DEFAULT 0 COMMENT '1000/800M跑步',
+  `STU1000_800R_SCORE` VARCHAR(45) NULL DEFAULT 0 COMMENT '1000/800米成绩',
+  `STULV` VARCHAR(10) NULL DEFAULT 0 COMMENT '左眼裸视力',
+  `STURV` VARCHAR(10) NULL DEFAULT 0 COMMENT '右眼裸视力',
+  `STUGLV` VARCHAR(10) NULL DEFAULT 0 COMMENT '左眼串镜',
+  `STUGRL` VARCHAR(10) NULL DEFAULT 0 COMMENT '右眼串镜',
+  `STULAM` TINYINT NULL DEFAULT 0 COMMENT '左眼屈光不正',
+  `STURAM` TINYINT NULL DEFAULT 0 COMMENT '右眼屈光不正',
+  `STUFLEXIBLE_ADDSCORE` INT NULL DEFAULT 0 COMMENT '柔韧项目加分',
+  `STUENDURANCE_ADDSCORE` INT NULL DEFAULT 0 COMMENT ' 耐力跑加分',
+  `STU_NORMALSCORE` FLOAT NULL DEFAULT 0 COMMENT '标准分',
+  `STU_SUMSCORE` FLOAT NULL DEFAULT 0 COMMENT '总分',
+  `STU_SUMSCORE_GRADE` VARCHAR(10) NULL COMMENT '学生总分等级',
+  `CLASSID` VARCHAR(5) NULL COMMENT '教学班编号',
+  `CLASSNAME` VARCHAR(45) NULL COMMENT '教学班名字',
+  `TEANAME` VARCHAR(20) NULL COMMENT '学生总分等级',
+  PRIMARY KEY (`STUID`),
+  UNIQUE INDEX `STUID_UNIQUE` (`STUID` ASC) VISIBLE)
+  ENGINE = INNODB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+```
+
+
+
+
+
+```PYTHON
+
+
+# IMPORT OPENPYXL
+
+
+IMPORT PYMYSQL
+# FROM AFFILIATION IMPORT *
+FROM AFFILIATION IMPORT EXCEL
+FROM AFFILIATION IMPORT ANALYSE
+IMPORT RE
+
+
+
+DATA1 = EXCEL.READ_XLS_ROW('/HOME/ZHOUHAO/DESKTOP/20-21学年体测成绩.XLS')
+FILE1 = ANALYSE.FILE('/HOME/ZHOUHAO/DESKTOP/20-21学年体测成绩.XLS')
+
+COL_DATA = FILE1.SELECT_COL('教学班编号')
+PRINT(FILE1.HEAD)
+
+
+RESULT_DATA = []
+FOR DATA IN COL_DATA:
+    IF DATA IS NONE:
+        RESULT_DATA.APPEND(DATA)
+    ELSE:
+        FLAG_INDEX = DATA.RFIND('-')
+        RES_DATA = DATA[FLAG_INDEX+1:]
+        RESULT_DATA.APPEND(RES_DATA)
+# PRINT(RESULT_DATA)
+
+
+FOR INDEX,ITEM IN ENUMERATE(DATA1[1:]):
+    ITEM[-3] = RESULT_DATA[INDEX]
+# PRINT(DATA1[1:])
+
+
+PARAMS = DATA1[1:]
+TMP_LIST = []
+RESULT = []
+FOR I IN PARAMS: # I -> [1,2,3,4]
+    TMP_LIST = []
+    FOR _ IN I:
+
+        IF _ == '':
+            TMP_LIST.APPEND(NONE)
+        ELSE:
+            TMP_LIST.APPEND(_)
+    RESULT.APPEND(TMP_LIST)
+
+
+
+CONN = PYMYSQL.CONNECT(HOST='127.0.0.1', PORT=3306,
+                       USER='ROOT', PASSWORD='123.COM',
+                       DATABASE='MYDB', CHARSET='UTF8MB4')
+TRY:
+    WITH CONN.CURSOR() AS CURSOR:
+        # 执行批量插入操作
+        LANGUAGE = "INSERT INTO TB_PHYSICAL_TEST (STUID,STUNAME,STUSEX,STUGRADE,STUCLASS,COLLNAME,STUHEIGHT,STUWEIGHT,STUHW_SCORE,STUVC,STUVC_SCORE,STU50R,STU50R_SCORE,STUSLJ,STUSLJ_SCORE,STUSAR,STUSAR_SCORE,STUSPUPS,STUSPUPS_SCORE,STU1000_800R,STU1000_800R_SCORE,STULV,STURV,STUGLV,STUGRL,STULAM,STURAM,STUFLEXIBLE_ADDSCORE,STUENDURANCE_ADDSCORE,STU_NORMALSCORE,STU_SUMSCORE,STU_SUMSCORE_GRADE,CLASSID,CLASSNAME,TEANAME) VALUES (%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S,%S)"
+        CURSOR.EXECUTEMANY(LANGUAGE,RESULT)
+    CONN.COMMIT()
+EXCEPT PYMYSQL.MYSQLERROR AS ERR:
+    PRINT(ERR)
+    CONN.ROLLBACK()
+FINALLY:
+    CONN.CLOSE()
+
+
+```
+
+
+
+
+
+
+
+
+
+---
+
+## REIDIS
+
+> 官方说明文档 WWW.REDISDOC.COM
+
+REDIS - KV数据库 - 内存 - 单线程+异步I/O (多路I/O复用)
+
+计算密集型应用 : 多进程 + 多线程
+
+I/O密集型应用: 单线程 + 异步I/O (协程)
+
+冷数据 (不经常使用) / 热数据(经常使用)
+
+1. 高速缓存服务 (用户经常访问的数据从数据库搬到内存)
+2. 实时排行榜
+3. 投票点赞
+4. 消息队列
+
+启动REDIS
+
+```SHELL
+REDIS-SERVER --REQUIREPASS 123.COM >REDIS.LOG &
+RED-SERVER 配置文件 > REDIS.LOG &
+# 绑定IP
+REDIS-SERVER --BIND 172.18.61.250 > REDIS.LOG &
+# 开启AOF启动
+# AOF模式 就是会生成一个APPEND.AOF的文件记录你之前输入的命令,然后重启服务之后,默认执行文件里面的命令,以达到数据保留
+REDIS-SERVER --APPENDONLY YES > REDIS.LOG &
+```
+
+启动失败
+
+`DUMP.RDB` , `APPENDONLY.AOF`  用来保存数据
+
+```SHELL
+如果报RDB错误,可能是因为DUMP.RDB文件损坏
+# 方法1 删除这个文件
+# 方法2 使用REDIS-CHECK-RDB 命令检测并恢复这个文件
+REDIS-CHECK-RDB # 检测DUMP.RDB这个文件
+REDIS-CHECK-RDB --FIX # 检测并修复这个文件
+# 如果使用AOF模式
+REDIS-CHECK-RDB APPENDONLY.AOF # 检查APPEND.AOF 这个文件
+REDIS-CHECK-RDB --FIX APPENDONLY.AOF # 检测并修复这个文件
+
+```
+
+### REDIS 基本命令
+
+```SQL
+SET USERNAME BUSY_TO_LIVE
+GET USERNAME # 根据KEY获取对应的VALUE
+GETRANGE USERNAME 2 5 # 对VALUE进行切片获取内容
+APPEND USERNAME 123 # 在对应KEY后面的VALUE添加相应得到内容
+MSET KEY1 KEY2 ... # 一次性给创建多个键值对
+MGET KEY1 KEY2 ... # 一次性获取多个键值对的值
+SAVE # 保存
+BGSAVE # 后台保存
+TYPE # 查看相应键值对的类型
+DBSIZE # 查看数据库里面一共有几个键值对
+HSET STU1 ID 1001 # 一般用来存对象
+HMSET STU2 ID 1002 NAME ZHOUHAO SEX MAN
+HGET STU1 ID 
+HMGET STU1 NAME SEX BIRTH... # 一次性取多个
+HVALS STU1  # 获取相应对象所有的值
+HGETALL STU1 # 获取对象所有的键和值
+```
+
+
+
+
+
+```PYTHON
+LPUSH NUMBERS 10 20 30 40 50 60 #  
+LRANGE NUMBERS 0 -1
+LPOP NUMBERS 1
+
+RPUSH(右边)
+
+```
+
+
+
+连接
+
+```SHELL
+REDIS-CLI -H IP:端口
+# REDIS-CLI -H 192.168.80.149:6379 # 默认为6379
+# 如果在本地则直接输入REDIS-CLI回车就行
+# 如果有认证则进入终端后还要再输入AUTH 密码进行身份认证
+```
+
+设置和获取数据
+
+```SHELL
+SET KEY VALUE EXPIRE
+# 比如
+SET ZHOUHAO 123.COM EX 30  # 设置这个数据只保存30S
+# 获取数据
+GET ZHOUHAO
+GETRANGE #  
+# 查看对应数据还能存在多长时间
+TTL ZHOUHAO
+```
+
+测试REDIS的性能
+
+```SHELL
+REDIS-BENCHMARK
+```
+
+切换底层数据库(默认有16个数据库 [0-15] )
+
+```SHELL
+SELECT 1 # 选择第二个数据库
+```
+
+情空数据库 
+
+```SHELL
+FLUSHDB # 清空当前数据库
+FLUSHALL # 清除所有数据库的数据
+```
+
+
+
+REDI地图相关
+
+
+
+
+
+````
+#  DATABASE STUDY
+
+## 数据库概述
+
+`LINUX`
+
+
+
+
+
+> 数据库的分类: 关系型数据库(SQL) 和 非关系型数据库(NOSQL) 
+
+关系型数据库
+
+- 理论基础: 关系代数和集合论
+- 具体表象: 用二维表来保存数据
+  + 行: 一条记录 -- 一个学生的信息
+  + 列: 一个字段 -- 学生的某个属性, 例如: 学号,姓名,出生日期
+  + 主键列: 能够唯一标识一条记录的列, 例如:学生的学号
+
+
+
+
+
+> 安装 MARIADB
+
+```SHELL
+YUM SEARCH MARIADB  # 查找相关的包
+
+```
+
+```MYSQL
+# 修改密码
+1. USE MYSQL;
+2. UPDATE USER SET PASSWORD=PASSWORD('123.COM') WHERE USER='ROOT';
+3. FLUSH PRIVILEGES
+
+
+
+
+
+
+## FLASK
+
+### FLASK基本使用
+
+```PYTHON
+FROM FLASK IMPORT FLASK
+APP = FLASK(__NAME__)
+@APP.ROUTE('/')
+DEF HELLO_WORLD():
+    PAGE_CODE = '<H1 STYLE="TEXT-ALIGN: CENTER; FONT-FAMILY:CONSOLAS">HELLO WORLD</H1>'
+    PAGE_CODE += '<HR>'
+    RETURN PAGE_CODE
+IF __NAME__ == '__MAIN__':
+    APP.RUN(DEBUG=TRUE)
+    # APP.RUN(HOST='192.168.0.100',DEBUG=TRUE) 局域网内可以访问(改成公网IP的话, )
+
+```
+
+
+````
+
+
+
+
+
+
+
+```SQL
+-- MYSQL WORKBENCH FORWARD ENGINEERING
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- SCHEMA SCHOOL
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- SCHEMA SCHOOL
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `SCHOOL` ;
+USE `SCHOOL` ;
+
+-- -----------------------------------------------------
+-- TABLE `SCHOOL`.`TB_CLASS`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `SCHOOL`.`TB_CLASS` (
+  `CLASSNO` NVARCHAR(10) NOT NULL COMMENT '班级编号',
+  `CLASSNAME` NVARCHAR(30) NOT NULL COMMENT '班级学生',
+  `COLLEGE` NVARCHAR(30) NOT NULL COMMENT '所在学院',
+  `SPECIALTY` NVARCHAR(30) NOT NULL COMMENT '所属专业',
+  `ENTERYEAR` VARCHAR(45) NULL COMMENT '入学年份',
+  PRIMARY KEY (`CLASSNO`),
+  UNIQUE INDEX `CLASSNO_UNIQUE` (`CLASSNO` ASC) VISIBLE)
+ENGINE = INNODB;
+
+
+-- -----------------------------------------------------
+-- TABLE `SCHOOL`.`TB_COURSE`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `SCHOOL`.`TB_COURSE` (
+  `CNO` NVARCHAR(10) NOT NULL COMMENT '课程编号',
+  `CNAME` NVARCHAR(30) NOT NULL COMMENT '课程名称',
+  `CREDIT` VARCHAR(45) NULL COMMENT '课程学分',
+  `CLASSHOUR` INT NULL COMMENT '课程学时',
+  PRIMARY KEY (`CNO`))
+ENGINE = INNODB;
+
+
+-- -----------------------------------------------------
+-- TABLE `SCHOOL`.`TB_SCORE`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `SCHOOL`.`TB_SCORE` (
+  `SNO` NVARCHAR(15) NOT NULL COMMENT '学号',
+  `CNO` NVARCHAR(10) NOT NULL,
+  `USCORE` DECIMAL(4,1) NULL COMMENT '平时成绩',
+  `ENDSCORE` DECIMAL(4,1) NULL COMMENT '期末成绩',
+  PRIMARY KEY (`SNO`, `CNO`),
+  INDEX `FK_TB_SCORE_TB_COURSE1_IDX` (`CNO` ASC) VISIBLE,
+  CONSTRAINT `FK_TB_SCORE_TB_COURSE1`
+    FOREIGN KEY (`CNO`)
+    REFERENCES `SCHOOL`.`TB_COURSE` (`CNO`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = INNODB;
+
+
+-- -----------------------------------------------------
+-- TABLE `SCHOOL`.`TB_STUDENT`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `SCHOOL`.`TB_STUDENT` (
+  `SNO` NVARCHAR(15) NOT NULL,
+  `SNAME` NVARCHAR(10) NOT NULL COMMENT '姓名',
+  `SEX` NCHAR(1) NOT NULL DEFAULT '男' COMMENT '性别',
+  `BIRTH` DATE NULL COMMENT '出生日期',
+  `CLASSNO` NVARCHAR(10) NOT NULL,
+  PRIMARY KEY (`SNO`),
+  INDEX `FK_TB_STUDENT_TB_CLASS_IDX` (`CLASSNO` ASC) VISIBLE,
+  INDEX `FK_TB_STUDENT_TB_SCORE1_IDX` (`SNO` ASC) VISIBLE,
+  CONSTRAINT `FK_TB_STUDENT_TB_CLASS`
+    FOREIGN KEY (`CLASSNO`)
+    REFERENCES `SCHOOL`.`TB_CLASS` (`CLASSNO`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `FK_TB_STUDENT_TB_SCORE1`
+    FOREIGN KEY (`SNO`)
+    REFERENCES `SCHOOL`.`TB_SCORE` (`SNO`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = INNODB;
+
+
+-- -----------------------------------------------------
+-- TABLE `SCHOOL`.`TB_DORM`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `SCHOOL`.`TB_DORM` (
+  `DORMNO` NVARCHAR(10) NOT NULL COMMENT '宿舍编号',
+  `BUILD` NVARCHAR(30) NOT NULL COMMENT '楼栋',
+  `STOREY` NVARCHAR(10) NOT NULL COMMENT '楼层',
+  `ROOMNUM` NVARCHAR(10) NOT NULL COMMENT '房间号',
+  `BEDSNUM` INT UNSIGNED NULL COMMENT '总床位数',
+  `DORMTYPE` NVARCHAR(10) NULL COMMENT '宿舍类别',
+  `TEL` NVARCHAR(15) NULL COMMENT '宿舍电话',
+  PRIMARY KEY (`DORMNO`))
+ENGINE = INNODB;
+
+
+-- -----------------------------------------------------
+-- TABLE `SCHOOL`.`TB_LIVE`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `SCHOOL`.`TB_LIVE` (
+  `SNO` NVARCHAR(15) NOT NULL COMMENT '学号',
+  `BEDNO` NVARCHAR(2) NOT NULL COMMENT '床位号',
+  `INDATE` DATE NOT NULL COMMENT '入住时间',
+  `OUTDATE` DATE NOT NULL,
+  `DORMNO` NVARCHAR(10) NOT NULL,
+  PRIMARY KEY (`DORMNO`),
+  INDEX `FK_TB_LIVE_TB_DORM1_IDX` (`DORMNO` ASC) VISIBLE,
+  INDEX `FK_TB_LIVE_TB_STUDENT1_IDX` (`SNO` ASC) VISIBLE,
+  CONSTRAINT `FK_TB_LIVE_TB_DORM1`
+    FOREIGN KEY (`DORMNO`)
+    REFERENCES `SCHOOL`.`TB_DORM` (`DORMNO`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `FK_TB_LIVE_TB_STUDENT1`
+    FOREIGN KEY (`SNO`)
+    REFERENCES `SCHOOL`.`TB_STUDENT` (`SNO`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = INNODB;
+
+
+-- -----------------------------------------------------
+-- TABLE `SCHOOL`.`TB_CHECKHEALTH`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `SCHOOL`.`TB_CHECKHEALTH` (
+  `CHECKNO` INT NOT NULL AUTO_INCREMENT COMMENT '检查号',
+  `CHECKDATE` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '检查时间',
+  `CHECKMAN` VARCHAR(10) NOT NULL COMMENT '检查人员',
+  `SCORE` DECIMAL(5,2) NOT NULL COMMENT '检查成绩',
+  `PROBLEM` VARCHAR(50) NULL COMMENT '存在问题',
+  `DORMNO` NVARCHAR(10) NOT NULL COMMENT '寝室编号',
+  PRIMARY KEY (`CHECKNO`),
+  INDEX `FK_TB_CHECKHEALTH_TB_LIVE1_IDX` (`DORMNO` ASC) VISIBLE,
+  CONSTRAINT `FK_TB_CHECKHEALTH_TB_LIVE1`
+    FOREIGN KEY (`DORMNO`)
+    REFERENCES `SCHOOL`.`TB_LIVE` (`DORMNO`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = INNODB;
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+```
+
+
+
