@@ -6,7 +6,7 @@
 
 + [A Visual Git Reference](https://marklodato.github.io/visual-git-guide/index-en.html) : Git的学习网站
 + [Learning Git Branching](https://learngitbranching.js.org/)  
-+ [Visualizing Git Concepts with D3](https://onlywei.github.io/explain-git-with-d3/): *网页版Git(方便你熟悉Git命令)*
++ [Visualizing Git Concepts with D3](https://onlywei.github.io/explain-git-with-d3/): **网页版Git(方便你熟悉Git命令)**
 
 1. 初始化 `Git` 仓库 ( 将文件夹初始化为`Git`仓库 )
 
@@ -31,7 +31,7 @@ git init # 执行完这条命令之后会在当前目录生成一个.git的文�
 ```bash
 git init                  # 将文件夹初始化为Git仓库
 git branch <name>         # 创建分支
-git stash				  # 将当前目录拉入缓存
+git stash		  # 将当前目录拉入缓存
 ```
 
 ## Git暂存区命令
@@ -91,7 +91,49 @@ git pull # 同步远程仓库(将服务器更新同步到本地)
 git config core.editor vi
 ```
 
+
+
+### Conventional Commits
+> 约定式提交
+`<类型>[可选 范围]: <描述>`
+
+`[可选 正文]`
+
+`[可选 脚注]`
+
+提交类型:
+
++ fix : 修复了某个bug
++ feat : 新增了某个功能
++ build : 一些影响构建系统的更新
++ chare : 一些不更改核心代码的更新
++ ci : 变更了一些 CI 系统的配置
++ docs : 对文档做出了一些修改
++ test : 新增或修改测试文件
++ refactor : 重构了代码 (但没有新增加或修复任何东西)
++ ...
+
+脚注
+
+`Co-authored-by:user1,user2`
+`BREAKING CHANGE:`: 破坏性变更描述文本
+`BREAKING CHANGE: environment variables now take precedence over config files`
+
+
+```git
+refactor(frontend): improved structure of frontend code
+
+Improved code quality of frontend code and removed unused imports.
+
+BREAKING CHANGE: Format of the configuration file now changed to JSON instead of JavaScript files.
+
+```
+![<++>](https://www.conventionalcommits.org/zh-hans/) 
+
+[更多相关的提交类型](https://github.com/pvdlg/conventional-changelog-metahub#commit-types) 
+
 ### 修改最后一次commit的信息。
+
 
 ```bash
 git commit –amend
@@ -129,4 +171,5 @@ git commit --amend
 ```bash
 git push --force-with-lease origin master
 ```
+
 
