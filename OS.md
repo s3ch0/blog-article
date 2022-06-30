@@ -111,6 +111,8 @@ minimal.S
 ## 状态机模型的应用
 
 
+`strace -T a.out &| nvim -`
+
 ## 操作系统上的进程
 
 
@@ -135,6 +137,55 @@ minimal.S
 
 ## xv6 代码导读
 
+### 环境搭建
+
+
+1. 下载源码
+ARCH 环境
+
+```bash
+sudo pacman -S riscv64-linux-gnu-gcc
+
+```
+
+```
+make qemu
+
+```
+
+![XV6 Source Code](https://github.com/mit-pdos/xv6-riscv) 
+
+```bash
+
+make -nB qemu | nvim -
+# :set nowrap
+# :%s/ /\r /g
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> A </kbd> + <kbd class="keybord"> X </kbd>&ensp; 退出 QEMU
+
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> A </kbd> + <kbd class="keybord"> C </kbd>&ensp; 启动 QEMU 的模拟器
+
+
+
+```
+
+
+我们可以将多处理器改为 1 `-smp 1`
+
+
+
+2. 配置 VScode
+> 生成一个 compile_commands.json
+
++ `bear`
+
+```
+bear make qemu
+```
+
++ `compiledb`
+
+![compiledb github link](https://github.com/nickdiego/compiledb) 
+
 
 
 ## Xv6 上下文切换
@@ -146,4 +197,40 @@ minimal.S
 
 
 ## 操作系统设计
+
+### 输入输出模型
+
+查看 系统中总线上的设备
+
+`lspci -tv` `lsusb -tv`
+
+
+`/dev/` 中的对象
+
++ `/dev/pts/[x] - pseudo terminal`
++ `/dev/null - 'Null' 设备`
++ `/dev/zero - '零' 设备`
++ `/dev/random /dev/urandom - 随机数生成器`
+
+`yes` 
+
+`cat /dev/urandom | head -c 512 | xxd`
+`cat /dev/zero | head -c 512 | xxd`
+
+`stty -a`
+
+`man termios`
+
+
+GPU 编程
+
+
+gcc -> nvcc
+
+binutils -> cuobjdump
+
+gdb -> cuda-gdb
+
+
+perf -> nvprof
 

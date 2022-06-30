@@ -103,9 +103,11 @@ noremap Q :q<CR>
 
 
 
+
 ```bash
 /usr/share/X11/xkb/keycodes/evdev
 ```
+我们可以使用 xev 来捕获键盘的输入来获得对应的 keycode
 
 
 
@@ -230,7 +232,47 @@ fdisk -l
 
 更换 pacman 的源
 
+![生成相关镜像列表](https://archlinux.org/mirrorlist/) 
+
+下面为 `2022-06-19` 生成对应的中国镜像源列表
+
 ```bash
+##
+## Arch Linux repository mirrorlist
+## Generated on 2022-06-19
+##
+
+## China
+Server = http://mirrors.163.com/archlinux/$repo/os/$arch
+Server = http://mirrors.aliyun.com/archlinux/$repo/os/$arch
+Server = https://mirrors.aliyun.com/archlinux/$repo/os/$arch
+Server = http://mirrors.bfsu.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.bfsu.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.cqu.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.cqu.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.dgut.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.dgut.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.hit.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.hit.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirror.lzu.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.neusoft.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.neusoft.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.nju.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.nju.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.njupt.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirror.redrock.team/archlinux/$repo/os/$arch
+Server = https://mirror.redrock.team/archlinux/$repo/os/$arch
+Server = http://mirrors.shanghaitech.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.shanghaitech.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.sjtug.sjtu.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.wsyu.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.wsyu.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.xjtu.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.zju.edu.cn/archlinux/$repo/os/$arch
 
 
 ```
@@ -242,9 +284,6 @@ fdisk -l
 ```
 mount /dev/sda2 /mnt
 ```
-
-
-
 
 
 ```bash
