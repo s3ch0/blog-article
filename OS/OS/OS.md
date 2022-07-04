@@ -187,6 +187,23 @@ bear make qemu
 ![compiledb github link](https://github.com/nickdiego/compiledb) 
 
 
+调试 xv6
+运行 `gdb`
+
+```
+.gdbinit:2: Error in sourced command file:
+Undefined item: "riscv:rv64".
+```
+
+如果在运行 gdb 时遇见上面的错误我们可以使用
+`gdb-multiarch` 
+
+在 linux 里我们可以安装 `riscv64-linux-gnu-gdb`
+
+然后再开一个终端我们运行 `make qemu-gdb`
+
+这时候我们成功在第一条指令上停下来了
+
 
 ## Xv6 上下文切换
 
