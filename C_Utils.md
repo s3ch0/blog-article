@@ -1,6 +1,6 @@
 
 
-```python
+```c
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,3 +37,18 @@ int main(int argc,char* argv[]){
 }
 
 ```
+
+[<++>](https://developer.arm.com/documentation/dui0375/g/Compiler-specific-Features)  
+[<++>](https://developer.arm.com/documentation/101754/0618/armclang-Reference/Compiler-specific-Function--Variable--and-Type-Attributes) 
+
+`x macro` 的使用
+[<++>](https://c-faq.com/decl/spiral.anderson.html) 
+
+I know I can do this:
+
+```c
+#define MACRO(api, ...) \
+  bool ret = api(123, ##__VA_ARGS__);
+```
+
+This is just an example, it's part of a more complicated solution. The point is that I need to append the variable number of arguments to the first 123. **The ## makes the compiler strip out the comma after the 123 argument if no arguments were passed into MACRO.**

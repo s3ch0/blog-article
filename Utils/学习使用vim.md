@@ -26,13 +26,46 @@
 
 [Vim-Genius](http://www.vimgenius.com/) | [Open Vim Tutorials](https://www.openvim.com/tutorial.html) | [Vim-Adventures](https://vim-adventures.com)
 
+<font color="red" face=Monaco size=3> 我们知道 <kbd class="keybord"> CapsLock </kbd>&ensp;这个键位不是特别经常使用的一个键位，但它又离我们的主键位非常近，并且还比较大所以我们有必要将这个键替换掉 </font>
+
+这时候我们就可以更快地使用 快捷键了
+<kbd class="keybord"> Ctrl  </kbd> + <kbd class="keybord"> i </kbd>&ensp;提示
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> e </kbd>&ensp;补全
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> j </kbd>&ensp; 回车
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> u </kbd>&ensp;  删除一整行
+<++> TODO
+
+安装 `xcape` 工具
+```bash
+# ubuntu
+sudo apt-get install xcape
+# Arch Linux
+sudo pacman -S xcape
+```
+运行命令
+```bash
+# make CapsLock behave like Ctrl
+setxkbmap -option ctrl:nocaps
+
+# make short-pressed Ctrl behave like Escape:
+xcape -e 'Control_L=Escape'
+```
+
+设置开机自动启动
+将上面那两条命令添加到 `~/.xprofile` 文件里
+从而让每次 启动 X 服务都运行上面那些命令
+
+
+
+
+
 ## Vim 的基本操作
 ![wAUpUM.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/6fb0ca512816ffb3f079dd474ce42374.png)
 vim 与别的编辑器最大的不同,<font color=red>就在于它有多种模式</font>,而在不同的模式下分别负责不同的功能模块.
 我们需要进入到相应的模式来快速完成我们的操作。如我们可以进入插模式下来进行字符的输入,在可视模式下完成字符的选取等等....
 
 下面就先来介绍,进入 vim 里默认的模式 `普通模式`
-### 普通模式
+### 普通模式 ( `normal mode` )
 在 [vim 实用技巧](https://library-cdq.oss-cn-beijing.aliyuncs.com/technology/Vim%E5%AE%9E%E7%94%A8%E6%8A%80%E5%B7%A7.pdf) 中是这样描述 vim 的普通模式的：
 >就像画家只花一小部分时间涂色一样，程序员也只花一小部分时间编写代码。绝大多数时间用来思考、阅读，以及在代码中穿梭浏览。而且，当确实需要做修改时，谁说一定要切换到插入模式才行？我们可以重新调整已有代码的格式，复制它们，移动其位置，或是删除它们。在普通模式中，我们有众多的工具可以利用。
 
@@ -62,15 +95,36 @@ vim 与别的编辑器最大的不同,<font color=red>就在于它有多种模�
 
 
 
+
 ![gyKgUn.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/60887ebc1d0a5486ee9dea16b41108fe.png)
 
+我们可以通过
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> u </kbd>&ensp; 向上翻页
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> d </kbd>&ensp; 向下翻页
+<kbd class="keybord"> H </kbd>&ensp;移动到页面最上方
+<kbd class="keybord"> L </kbd>&ensp;移动到页面最下方
+<kbd class="keybord"> M </kbd>&ensp;移动到页面中间位置
 
 
-我们还可以通过使用 <kbd class="keybord"> f{char} / F{char} </kbd>&ensp; 来向左/向右查找对应的字符。
+
+
+
+
+
+我们还可以通过使用 <kbd class="keybord"> f{char} / F{char} </kbd>&ensp; 来向左/向右查找对应的字符 **( 字符所处位置 )**
+
+<kbd class="keybord"> t{char} </kbd> / <kbd class="keybord"> T{char} </kbd>&ensp; 效果和 `f(find)`命令一样 唯一不同的是 `t/T` 命令是跳转到要查找单词的前一个字符
+
+
+<kbd class="keybord"> % </kbd>&ensp; 跳转到成对出现的字符上如现在光标在左括号上`(` 现在我们想跳转到右括号上 `%` 我们只需要在普通模式下按 `%` 号即可
+
 
 ![Pddwc3.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/5a69b8f53716db1c9623b3f0273b99d2.png)
 
-### 插入模式
+
+
+
+### 插入模式 ( `insert mode` )
 
 ![diLxcP.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/dd6aa7868fd94f9d0439cc366c5c5785.png) 
 #### 复合命令
@@ -115,18 +169,60 @@ vim 与别的编辑器最大的不同,<font color=red>就在于它有多种模�
 
 ![TmK9Ua.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/e1963c71852d63dc0b9269ec922f252a.png)
 
+### 替换模式 ( `Replace mode` )
+
+我们只需要在普通模式下按 <kbd class="keybord"> Shift </kbd> + <kbd class="keybord"> r </kbd>&ensp; 就能进入替换模式了
 
 
 ## Vim 的实用技巧
+我们可以使用一些小的正则表达式来达到很多惊艳的效果
 
+如我们可以使用以下命令
+```vim
+:%s/^\n$//g
+```
+来删除文本内所有重复的换行 (回车)
 
 
 
 ## Vim 的快捷键
 
 ## Vim 的窗口
+### 窗口管理的默认快捷键
+
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> w </kbd>&ensp; 
+
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> w </kbd> + <kbd class="keybord"> s </kbd>&ensp; 上下分屏
+
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> w </kbd> + <kbd class="keybord"> v </kbd>&ensp; 左右分屏
+
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> w </kbd> + <kbd class="keybord"> q </kbd>&ensp; 退出光标所在的分屏
+
+<kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> w </kbd> + <kbd class="keybord"> h j k l </kbd>&ensp; 对应光标 左 上 下 右 的移动 ( 窗口间移动 )
+
+
+## Vim 里的折叠 ( Folding )
+**在vim里关于折叠的操作命令是 `z` **
+设置根据语法来进行自动折叠 在大项目里面可能会有一会的延迟
+
+```vim
+set foldmethd=syntax
+```
+
++ <kbd class="keybord"> zf </kbd>&ensp;创建折行 
++ <kbd class="keybord"> zo </kbd>&ensp;打开折行
++ <kbd class="keybord"> zc </kbd>&ensp;关闭折行
++ <kbd class="keybord"> zd </kbd>&ensp;删除折行
+
+```vim
+zfa{
+```
+<++>
 
 ## Vim 的Buffer
+
+## Vim 的Tags
+
 ## Vim 的Tab
 
 ## Vim 的寄存器
@@ -135,6 +231,9 @@ vim 与别的编辑器最大的不同,<font color=red>就在于它有多种模�
 
 ## Vim 的配置
 
+<
+thie si a simple line
+>
 
 <font size=3 color=green>参考</font>
 + [vim-awesome](https://vimawesome.com/)
