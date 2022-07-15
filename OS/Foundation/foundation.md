@@ -733,4 +733,81 @@ tag tagname " same as the tjump
 ```
 但是tjump 命令在 tagname 处按 <kbd class="keybord"> tab </kbd>&ensp;键会对其产生相应的提示
 
+[How do i automatically load a tag file from directory when changing directory](https://stackoverflow.com/questions/19330843/how-do-i-automatically-load-a-tag-file-from-a-directory-when-changing-to-that-di) 
+
+如果我们默认使用下面这种方式在终端上并不会显示 ASNI_ESCAPE_CODE 
+```bash
+ls --color=auto | less
+```
+
+而如果我们使用下面命令,则会在终端上显示 ASNI_ESCAPE_CODE
+
+```bash
+ls --color | less
+```
+
+<font color="red" face=Monaco size=3> 原理: 其实 ls 会检测其标准输出流是否为终端,如果为终端则自适应不输出ASNI_ESCAPE_CODE </font>
+
+```c
+#define println(...) \
+  do {
+	printf(__VA_ARGS__); \
+	printf("\n"); \
+  } while(0)
+```
+
+
+VSCode: 现代工具来一套？
+刚拿到手，VSCode 的体验并不是非常好
+
+满屏的红线/蓝线
+因为 Code 并知道 NEMU 是怎么编译的
+IDE “编译运行” 背后没有魔法
+另一方面，这些东西一定是可以配置的
+配置解析选项: c_cpp_properties.json
+解锁正确的代码解析
+配置构建选项: tasks.json
+解锁 make (可跟命令行参数)
+配置运行选项: launch.json
+解锁单步调试 (我们并不非常推荐单步调试)
+插入福利：调试 Segmentation Fault
+听说你的程序又 Segmentation Fault 了？
+
+百度 Segmentation Fault 得到的首个回答的解释是完全错误的
+正确的解释
+指令越权访问内存 (r/w/x)
+原因很多，数组越界、memory corruption, ...
+指令未被执行，进程收到 SIGSEGV 信号
+默认的信号处理程序会 core dump 退出
+好的编辑器：也许不是万能的
+exec.c 也太难读了吧 (元编程，害死人)
+
+```c
+static inline def_EHelper(gp1) { // ???
+  ...
+  EMPTY(0) 
+    // EMPTY(idx)  =>  EX(idx, inv)
+    // EX(idx, inv)  =>  EXW(idx, inv, 0)
+    // !@%#&%^!#@&%!^@%#$%*^!#@*
+}
+```
+<++>
+产生 “这是什么操作” 的困惑：
+办法 1: RTFM + RTFSC + 写小程序尝试
+办法 2: 预编译以后的代码应该好理解！
+还记得我们对 Makefile 的导读吗？
+(说的容易做得难。直接 gcc -E 不是编译错误吗……)
+总结
+怎样读代码？
+读代码 ≠ “读” 代码
+
+用正确的工具，使自己感到舒适
+但这个过程本身可能是不太舒适的 (走出你的舒适区)
+我们看到太多的同学，到最后都没有学会使用编辑器/IDE
+要相信一切不爽都有办法解决
+信息来源
+
+在 /etc/hosts 中屏蔽百度
+去开源社区找 tutorials
+例子：vim-galore, awesome-c
 

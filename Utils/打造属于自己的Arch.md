@@ -575,3 +575,11 @@ yay -s mdview
 
 ```
 
+手动安装 `AUR` 的软件包
+```bash
+git clone https://aur.archlinux.org/visual-studio-code-bin.git
+cd visual-studio-code-bin
+makepkg -s
+sudo pacman -U visual-studio-code-bin-*.pkg.tar.xz
+```
+
