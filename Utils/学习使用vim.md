@@ -169,9 +169,27 @@ vim 与别的编辑器最大的不同,<font color=red>就在于它有多种模�
 
 ![TmK9Ua.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/e1963c71852d63dc0b9269ec922f252a.png)
 
+### 可视模式 ( `Visual mode` )
+在普通模式下我们只需要按 <kbd class="keybord"> v </kbd>&ensp; 即可进入可视模式
+还有两种特殊一点的可视模式 (也非常重要)
+
++ <kbd class="keybord"> Shift </kbd> + <kbd class="keybord"> v </kbd>&ensp; 进入行可视模式 ( `Line Visual Mode` )
++ <kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> v </kbd>&ensp; 进入块可视模式 ( `Block Visual Mode` )
+
+#### 行可视模式
+行可视模式一般用在复制某些内容然后进行粘贴比较方便
+
+#### 块可视模式
+
+<kbd class="keybord"> Shift </kbd> + <kbd class="keybord"> I </kbd>&ensp; 插入
+
+<kbd class="keybord"> Shift </kbd> + <kbd class="keybord"> A </kbd>&ensp; 插入
+
+
 ### 替换模式 ( `Replace mode` )
 
 我们只需要在普通模式下按 <kbd class="keybord"> Shift </kbd> + <kbd class="keybord"> r </kbd>&ensp; 就能进入替换模式了
+
 
 
 ## Vim 的实用技巧

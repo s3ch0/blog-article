@@ -7,9 +7,46 @@
 + [Lab链接](https://nju-projectn.github.io/ics-pa-gitbook/ics2021/PA0.html)
 
 ## 操作系统概述
+- [X] 为什么要学操作系统呢？
++ 为什么要学微积分/离散数学/XXXX/……？
++ 长辈/学长：~~擦干泪不要问为什么~~
 
 
+微积分 “被混起来” 的几件事
 
++ Newton 时代的微积分 (启蒙与应用)
+	+ 现代方法：Mathematica, sympy, sage
+		+ 这也是为什么我主张第一门语言学 Python
++ Cauchy 时代的微积分 (严格化与公理化)
+	+ 以及之后各种卡出的 bug (Weierstrass 函数、Peano 曲线……)
++ 微积分的现代应用
+优化、有限元、PID……
+
+```python
+from sympy import *
+x = var('x')
+atan(x)
+init_printing()
+integrate(atan(x))
+diff(atan(x))
+integrate( 1 / (x**3 + x**2 + x))
+
+```
+![](./OS.assets/2022-07-26_15-05.png)
+<font color="red" face=Monaco size=3> 你体内的 “编程力量” 尚未完全觉醒 </font> 
+
++ 每天都在用的东西，你还没搞明白
+	+ 窗口是怎么创建的？为什么 Ctrl-C 有时不能退出程序？
++ 组里的服务器有 128 个处理器，但你的程序却只能用一个 😂
++ 你每天都在用的东西，你却实现不出来
+	+ 浏览器、编译器、IDE、游戏/外挂、任务管理器、杀毒软件、病毒……
+
+<font color="red" face=Monaco size=3> 《操作系统》给你有关 “编程” 的全部 </font>
+
++ 悟性好：学完课程就在系统方向 “毕业”
+	+ 具有编写一切 “能写出来” 程序的能力 (具备阅读论文的能力)
++ 悟性差：内力大增
+	+ 可能工作中的某一天想起上课提及的内容
 
 
 ## 操作系统上的程序
