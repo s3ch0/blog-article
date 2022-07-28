@@ -686,7 +686,7 @@ NEMU 就是加强版的 YEMU
 + 海量的文档、学习资料、博客 (新世界的大门)
 + 提供友好的搜索 例子：awesome C
 
-如何快速学习 Git?
+**如何快速学习 Git?**
 + 我们已经知道开源社区的强大了
 + 所以你还在使用百度来查询你想要学习的资料吗？
 + 一个好的文档是真实存在的。
@@ -696,15 +696,20 @@ NEMU 就是加强版的 YEMU
 有趣的 “--”
 
 UNIX 的设计缺陷 (UGH 中点名批评)
-虽然是编程语言，但 Shell 更贴近自然语言
-有很多 corner cases
-如果有一个文件叫 “-rf”……怎么删除它？？？
-best practice: 文件名不以 “-” 开头、不含空格/符号……
-我们使用了 “白名单” .gitignore 文件
 
-只在 Git repo 里管理 .c, .h 和 Makefile
-基本原则：一切生成的文件都不放在 Git 仓库中
++ 虽然是编程语言，但 Shell 更贴近自然语言
++ 有很多 corner cases
+	+ 如果有一个文件叫 “-rf”……怎么删除它？？？
+	+ best practice: 文件名不以 “-” 开头、不含空格/符号……
 
+
+
+我们可以使用 “白名单” `.gitignore` 文件来控制我们需要对哪些文件进行版本控制
+
+
+<font color="red" face=Monaco size=3> 基本原则：一切生成的文件都不放在 Git 仓库中 </font>
+
+只在 Git repo 里管理 `.c`, `.h` 和 `Makefile`
 ```bash
 *       # 忽略一切文件
 !*/     # 除了目录
@@ -715,30 +720,30 @@ best practice: 文件名不以 “-” 开头、不含空格/符号……
 ```
 
 Git: 代码快照管理工具
++ 是一种 “可持久化数据结构”
++ 拓展阅读：[Pro Git](https://git-scm.com/book/en/v2)
 
-是一种 “可持久化数据结构”
-拓展阅读：Pro Git
 框架代码中的两处非常规 Git 使用
++ 提交脚本
+	+ 仅上传 .git；在服务器执行 git reset
+	+ 减少提交大小 (仅源文件)
++ Git 追踪
+	+ 编译时强制提交，获取同学编码的过程
 
-提交脚本
-仅上传 .git；在服务器执行 git reset
-减少提交大小 (仅源文件)
-Git 追踪
-编译时强制提交，获取同学编码的过程
-思考题：如何管理自己的代码快照？
-
-提示：分支/HEAD/... 只是指向快照的指针 (references)
+**思考题：如何管理自己的代码快照？**
+>提示：分支/HEAD/... 只是指向快照的指针 (references)
 
 #### make 
 回顾：[YEMU 模拟器](./foundation.Demo/yemu.tar.gz)
 
-Makefile 是一段 “declarative” 的代码
-描述了构建目标之间的依赖关系和更新方法
-同时也是和 Shell 结合紧密的编程语言
-能够生成各种字符串
-支持 “元编程” (#include, #define, ...)
+**Makefile 是一段 “declarative” 的代码**
++ 描述了构建目标之间的依赖关系和更新方法
++ 同时也是和 Shell 结合紧密的编程语言
+	+ 能够生成各种字符串
+	+ 支持 “元编程” (#include, #define, ...)
 
-Lab 代码的构建
+
+Lab 代码的构建: <br>
 顶层 (top-level) Makefile:
 ```makefile
 # := -> C #define
@@ -763,53 +768,33 @@ include ../Makefile
 + 共享库 (之后的 lab 使用)
   + `multimod-64.so: gcc -fPIC -shared -m64`
   + `multimod-32.so: gcc -fPIC -shared -m32`
-+ clean
++ `clean`
   + 删除构建的代码
 
 Makefile 真复杂: ~~放弃~~
 
-一个小诀窍
-
+<font color="red" face=Monaco size=3> 一个小诀窍: </font> <br>
 先观察 make 命令实际执行了什么 (trace)
-RTFM/STFW: make 提供的两个有用的选项
--n 只打印命令不运行
--B 强制 make 所有目标
++ `RTFM/STFW`: `make` 提供的两个有用的选项
+	+ `-n` 只打印命令不运行
+	+ `-B` 强制 make 所有目标
 
 ```bash
 make -nB \
  | grep -ve '^\(\#\|echo\|mkdir\)' \
  | vim -
 ```
-
-嘿！其实没那么复杂
-
-
-
-就是一堆 gcc -c (编译) 和一个 gcc (链接) 诶
-原来大部分 Makefile 都是编译选项
+嘿嘿！你会发现 make 其实没想象中那么复杂
++ 就是一堆 gcc -c (编译) 和一个 gcc (链接) 诶<br>
++ **原来大部分 Makefile 都是编译选项**
 Read the friendly source code!
 
 
-AbstractMachine 代码构建
-更长，更难读
+`AbstractMachine` 代码构建:更长，更难读
 
-但我们给大家留了一个小彩蛋
-“现代” 的文档编写方式
-“docs as code”
-例子：LLVM 使用 Doxygen [自动生成文档](https://llvm.org/doxygen/)
-
-教会大家 “计算机的正确打开方式”
-
-编程 ≠ 闷头写代码
-使用工具也是编程的一部分
-version-control systems: git, svn, ...
-build systems: make, cmake (C++), maven (Java), ...
-shell: bash, zsh, ...
-基本原则：任何感到不爽的事情都一定有工具能帮你
-
-如果真的没有，自己造一个的就会就来了
-(不太可能是真的)
-但这将会是一份非常好的研究工作
++ “现代” 的文档编写方式
+	+ “docs as code”
+	+ 例子：LLVM 使用 Doxygen [自动生成文档](https://llvm.org/doxygen/)
 
 ```makefile
 ### *Get a more readable version of this Makefile* by `
@@ -820,6 +805,29 @@ html:
       markdown_py > Makefile.html
 .PHONY: html
 ```
+
+教会大家 “计算机的正确打开方式”<br>
++ 编程 ≠ 闷头写代码
++ 使用工具也是编程的一部分
+
+```test
+version-control systems: git, svn, ...
+build systems: make, cmake (C++), maven (Java), ...
+
+shell: bash, zsh, ...
+```
+
+
+> 基本原则： <font color="darkcyan" face=Monaco size=3> 任何感到不爽的事情都一定有工具能帮你 </font> 
+
+如果真的没有，自己造一个的就会就来了(不太可能是真的)<br>
+但这将会是一份非常好的研究工作
+
+
+
+
+
+
 
 
 我们可以使用 `x-macros` 来对需要大量大体重复的代码进行替换
@@ -880,7 +888,171 @@ NEMU 代码导读
 启动代码选讲
 编辑器配置
 
-### 编辑器
+拿到源代码，先做什么？
+NEMU 对大部分同学来说是一个 “前所未有大” 的 project。
+
+先大致了解一下
+
+项目总体组织
+tree 要翻好几个屏幕
+find . -name "*.c" -o -name "*.h" (110+ 个文件)
+项目规模
+find ... | xargs cat | wc -l
+5,000+ 行 (其实很小了)
+C 语言代码，都是从 main() 开始运行的。那么哪里才有 main 呢？
+
+浏览代码：发现 main.c，估计在里面
+使用 IDE (vscode: Edit → Find in files)
+The UNIX Way (无须启动任何程序，直接查看)
+
+grep -n main $(find . -name "*.c") # RTFM: -n
+find . | xargs grep --color -nse '\<main\>'
+Vim 当然也支持
+
+:vimgrep /\<main\>/ **/*.c
+浏览 :cn, :cp, ...
+
+main()
+比想象中短很多……
+
+int main(int argc, char *argv[]) {
+  init_monitor(argc, argv);
+  engine_start();
+  return is_exit_status_bad();
+}
+Comments
+
+把 argc, argv 传递给另一个函数是 C 的 idiomatic use
+init_monitor 代码在哪里？
+每次都 grep 效率太低
+需要更先进的工具 (稍候介绍)
+
+
+parse_args()
+这个函数的名字起的很好，看了就知道要做什么
+
+满足好代码不言自明的特性
+的确是用来解析命令行参数的，-b, -l, ...
+使用了 getopt → RTFM!
+失败的尝试：man getopt → getopt (1)
+
+成功的尝试
+
+捷径版：STFW “C getopt” → 网页/博客/...
+专业版：man -k getopt → man 3 getopt
+意外之喜：man 还送了个例子！跟 parse_args 的用法一样耶
+
+NEMU: 一个命令行工具
+The friendly source code
+
+命令行可以控制 NEMU 的行为
+我们甚至看到了 --help 帮助信息
+如何让我们的 NEMU 打印它？
+
+问题等同于：make run 到底做了什么
+方法 1: 阅读 Makefile
+方法 2: 借助 GNU Make 的 -n 选项
+开始痛苦的代码阅读之旅：坚持！
+
+static inline
+```c
+static inline void parse_args(int argc, char *argv[]) { ... }
+```
+parse_args 函数是 static, inline 的，这是什么意思？
+
+inline (C99 6.7.4 #5): Making a function an inline function suggests that calls to the function be as fast as possible. The extent to which such suggestions are effective is implementation-defined. (inline更多有趣的行为请大家RTFM)
+static (C99 6.2.2 #3): If the declaration of a file scope identifier for an object or a function contains the storage- class specifier static, the identifier has internal linkage.
+联合使用
+
+告诉编译器符号不要泄露到文件 (translation unit) 之外
+
+0): multiple definition of f; a.c:(.text+0xb): first defined here
+
+这也是为什么不在头文件里定义函数的原因
+
+两个 translation unit 同时引用，就导致 multiple definition
+思考题：为什么 C++ 能把 class 都定义到头文件里？？？像 vector 的实现就是直接粘贴进去的
+
+
+更多关于 static inline (2)
+
+如果你的程序较短且性能攸关，则可以使用 static inline 函数定义在头文件中。例子 (**/x86/**/reg.h)：
+
+```c
+static inline int check_reg_index(int index) {
+  assert(index >= 0 && index < 8);
+  return index;
+}
+```
+`check_reg_index` 完全可以单独放在一个 C 文件里，头文件中只保留声明：
+```c
+int check_reg_index(int index);
+```
+但这样会导致在编译时，编译出一条额外的 call 指令 (假设没有 LTO)
+使用 `inline` 可以在调用 `check_reg_index(0)` 编译优化成零开销
+
+新的问题：啥是 assert？
+```c
+#define assert(cond) if (!(cond)) panic(...);
+```
+注意特殊情况：
+
+```c
+if (...) assert(0); // 上面的assert对么？
+else ...
+```
+
+```c
+#define assert(cond) \
+  do { \
+    if (!(cond)) { \
+      fprintf(stderr, "Fail @ %s:%d", __FILE__, __LINE__); \
+      exit(1); \
+    } \
+  } while (0)
+```
+
+```c
+#define assert(cond) ({ ... })
+```
+
+千辛万苦……
+之后的历程似乎就比较轻松了。有些东西不太明白(比如 `init_device()`)，但好像也不是很要紧，到了 `welcome()`：
+```c
+static inline void welcome() {
+  ...
+  printf("Welcome to \33[1;41m\33[1;33m%s\33[0m-NEMU!\n",
+    str(__ISA__)); // bad code! jyy doesn't like it.
+}
+```
+哇，还能顺带打印出编译的时间日期，奇怪的知识又增加了！
+
+初始化终于完成
+啊……根本没碰到核心代码
+
+上手以后还在用 grep 找代码？
+
+你刚拿到项目的时候，grep 的确不错
+但如果你要一学期在这个项目上，效率就太低了
+曾经有无数的同学选择容忍这种低效率
+
+Vim: 这都搞不定还引发什么编辑器圣战
+Marks (文件内标记)
+
+ma, 'a, mA, 'A, ...
+Tags (在位置之间跳转)
+
+:jumps, C-], C-i, C-o, :tjump, ...
+Tabs/Windows (管理多文件)
+
+:tabnew, gt, gT, ...
+Folding (浏览大代码)
+
+zc, zo, zR, ...
+更多的功能/插件
+
+(RTFM, STFW)
+
 
 VSCode: 现代工具来一套？
 刚拿到手，VSCode 的体验并不是非常好
@@ -906,7 +1078,7 @@ IDE “编译运行” 背后没有魔法
 
 好的编辑器：也许不是万能的
 
-exec.c 也太难读了吧 (元编程，害死人)
+exec.c 也太难读了吧 ~~(元编程，害死人)~~
 
 ```c
 static inline def_EHelper(gp1) { // ???
@@ -923,6 +1095,18 @@ static inline def_EHelper(gp1) { // ???
 办法 2: 预编译以后的代码应该好理解！
 还记得我们对 Makefile 的导读吗？
 (说的容易做得难。直接 gcc -E 不是编译错误吗……)
+我们既然知道 Makefile 里哪一行是 .o → .c 的转换
+
+我们添一个一模一样的 gcc -E 是不是就行了？
+```make
+$(OBJ_DIR)/%.o: src/%.c
+    @$(CC) $(CFLAGS) $(SO_CFLAGS) -c -o $@ $<
+    @$(CC) $(CFLAGS) $(SO_CFLAGS) -E -MF /dev/null $< | \
+      grep -ve '^#' | \
+      clang-format - > $(basename $@).i
+```
+
+> 敲黑板：征服你畏惧的东西，就会有意想不到的收获。
 
 总结
 怎样读代码？
@@ -945,6 +1129,7 @@ static inline def_EHelper(gp1) { // ???
 
 
 
+
 ## 数据的机器级表示
 
 位运算与单指令多数据
@@ -959,8 +1144,174 @@ static inline def_EHelper(gp1) { // ???
 3510 晶体管；56 条指令，算数指令仅有加减法和位运算
 数学上自然的整数需要实现成固定长度的 01 字符串
 
+习题：用上述位运算和常数实现 4 位整数的加法运算/Lab1
+
+加法比上述运算在电路上实现 fundamentally 更困难 (为什么？)
+“Circuit Complexity”
+
+```text
+142857 -> 0000 0000 0000 0010 0010 1110 0000 1001
+```
+
+假设 32-bit 整数；约定 MSB 在左，LSB 在右
+热身问题：字符串操作
+
+分别取出 4 个字节
+交换高/低 16 位
+
+&, |, ~, ... 对于整数里的每一个 bit 来说是独立 (并行) 的
+
+如果我们操作的对象刚好每一个 bit 是独立的
 
 
+我们在一条指令里就实现了多个操作
+SIMD (Single Instruction, Multiple Data)
+例子：Bit Set 
+
+
+32-bit 整数 $\color{darkcyan}x \rightarrow S \subseteq \{0,1,2,3,\cdots 31\}$
++ 位运算是对所有 bit 同时完成的
+  + C++ 中有 bitset，性能非常可观
+
+测试 $x \in S$
++ `(S >> x) & 1`
+
+求 $S^{\prime} = S \cup x$
++ `S | (1 << x)`
+
+求 $\mid S \mid$
+
+求 $S_1 \cup S_2$ $S_1 \cap S_2$
+
+求 $S_1 \setminus S_2$
+
+遍历所有 $S$ 中所有元素 (foreach)
+
+Bit Set: 求 
+```c
+int bitset_size(uint32_t S) {
+  int n;
+  for (int i = 0; i < 32; i++) {
+    n += bitset_contains(S, i);
+  }
+  return n;
+}
+```
+```c
+int bitset_size1(uint32_t S) { // SIMD
+  S = (S & 0x55555555) + ((S >> 1) & 0x55555555);
+  S = (S & 0x33333333) + ((S >> 2) & 0x33333333);
+  S = (S & 0x0F0F0F0F) + ((S >> 4) & 0x0F0F0F0F);
+  S = (S & 0x00FF00FF) + ((S >> 8) & 0x00FF00FF);
+  S = (S & 0x0000FFFF) + ((S >> 16) & 0x0000FFFF);
+  return S;
+}
+```
+
+
+Bit Set: 返回  中的某个元素
+有二进制数x = 0b+++++100，我们希望得到最后那个100
+
+想法：使用基本操作构造一些结果，能把+++++的部分给抵消掉
+一些有趣的式子：
+
+```text
+x & (x-1) → 0b+++++000；x ^ (x-1) → 0b00000111
+x & (~x+1) → 0b00000100 (lowbit️)
+x & -x, (~x & (x-1)) + 1 都可以实现 lowbit
+```
+
+只遍历存在的元素可以加速求 $\mid S \mid$
+
+Bit Set: 求 
+等同于 
+
+```c
+int clz(uint32_t x) {
+    int n = 0;
+    if (x <= 0x0000ffff) n += 16, x <<= 16;
+    if (x <= 0x00ffffff) n +=  8, x <<= 8;
+    if (x <= 0x0fffffff) n +=  4, x <<= 4;
+    if (x <= 0x3fffffff) n +=  2, x <<= 2;
+    if (x <= 0x7fffffff) n ++;
+    return n;
+}
+```
+
+(奇怪的代码) 假设  是 lowbit 得到的结果？
+
+```c
+#define LOG2(x) \
+  ("-01J2GK-3@HNL;-=47A-IFO?M:<6-E>95D8CB"[(x) % 37] - '0')
+```
+
+用一点点元编程 (meta-programming)；试一试 [log2.c](./foundation.Demo/log2.c)
+
+```python
+import json
+
+n, base = 64, '0'
+for m in range(n, 10000):
+  if len({ (2**i) % m for i in range(n) }) == n:
+    M = { j: chr(ord(base) + i)
+      for j in range(0, m)
+        for i in range(0, n)
+          if (2**i) % m == j }
+    break
+
+magic = json.dumps(''.join(
+  [ M.get(j, '-') for j in range(0, m) ]
+  )).strip('"')
+
+print(f'#define LOG2(x) ("{magic}"[(x) % {m}] - \'{base}\')')
+```
+一本有趣的参考书
+Henry S. Warren, Jr. Hacker's Delight (2ed), Addison-Wesley, 2012.
+
+让你理解写出更快的代码并不是 “瞎猜”
+
+主要内容是各种数学 (带来的代码优化)
+官方网站：hackersdelight.org
+见识一下真正的 “奇技淫巧”
+
+
+Undefined Behavior (UB)
+Undefined behavior (UB) is the result of executing computer code whose behavior is not prescribed by the language specification to which the code adheres, for the current state of the program. This happens when the translator of the source code makes certain assumptions, but these assumptions are not satisfied during execution. -- Wikipedia
+
+C 对 UB 的行为是不做任何约束的，把电脑炸了都行
+
+常见的 UB：非法内存访问 (空指针解引用、数组越界、写只读内存等)、被零除、有符号整数溢出、函数没有返回值……
+通常的后果比较轻微，比如 wrong answer, crash
+
+为什么 C/C++ 会有 UB？
+为了尽可能高效 (zero-overhead)
+
+不合法的事情的后果只好 undefined 了
+Java, js, python, ... 选择所有操作都进行合法性检查
+为了兼容多种硬件体系结构
+
+有些硬件 /0 会产生处理器异常
+有些硬件啥也不发生
+只好 undefined 了
+
+
+Undefined Behavior: 一个历史性的包袱
+埋下了灾难的种子
+
+`CVE: Common Vulnerabilities and Exposures`，公开发布软件中的漏洞
+buffer/integer overflow 常年占据 CVE 的一席之地
+高危漏洞让没有修补的机器立马宕🐔/变成肉🐔
+例子：`CVE-2018-7445 (RouterOS)`, 仅仅是忘记检查缓冲区大小……
+
+```c
+while (len) {
+  for (i = offset; (i - offset) < len; ++i) {
+    dst[i] = src[i+1];
+  }
+  len = src[i+1]; ...
+  offset = i + 1;
+}
+```
 
 ## 汇编/内联汇编
 
@@ -970,10 +1321,10 @@ static inline def_EHelper(gp1) { // ???
 + 他们需要一个 “共同语言”
 	+ 例如我们熟悉的 x86 calling convention
 
+---
++ cdecl (Linux)
++ stdcall (Win32)
 
-cdecl (Linux)
-
-stdcall (Win32)
 只要遵循标准的函数就可以互相调用
 
 

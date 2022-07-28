@@ -249,9 +249,13 @@ zfa{
 
 ## Vim 的配置
 
-<
-thie si a simple line
->
+## 其它Vim小技巧
++ [x] 如果你在vim里想查看一下当前文件的路径，那么你可以使用一下方法。
+	+ <kbd class="keybord"> {count} </kbd>&ensp;+ <kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> G </kbd>&ensp; 我们可以使用:  <kbd class="keybord"> 1 </kbd> + <kbd class="keybord"> Ctrl </kbd> + <kbd class="keybord"> G </kbd>&ensp; 来获得当前文件所处路径
+	+ 
+
+
+
 
 <font size=3 color=green>参考</font>
 + [vim-awesome](https://vimawesome.com/)
