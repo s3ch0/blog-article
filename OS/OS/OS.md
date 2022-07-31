@@ -650,6 +650,18 @@ $$
 + AI-based rewriting
 + Fine-grained semantics & system call fusion
 
+<table>
+  <tr>
+	<td>optimized</td>
+	<td>compile barrier</td>
+	<td>memory barrier</td>
+  </tr>
+  <tr>
+	<td><img src='./OS.assets/2022-07-30_23-04.png' width='350px'></td>
+	<td><img src='./OS.assets/2022-07-30_23-08.png' width='350px'></td>
+	<td><img src='./OS.assets/2022-07-31_23-19.png' width='350px'></td>
+  </tr>
+</table>
 
 <font color='red' face=Monaco size=3>进入 PL 的领域</font> 
 
@@ -720,6 +732,7 @@ $$
 <font color='red' face=Monaco size=3>问 gdb 吧</font> 
   + `info proc {mappings,...}` - 打印进程内存
 
+![alt](./OS.assets/2022-07-31_00-28.png)
 
 main() 之前发生了什么？
 `ld-linux-x86-64.so` 加载了 `libc`
@@ -827,6 +840,230 @@ Yes! - 这些 API 就是操作系统的全部
 + 其他更复杂的安全机制……
 
 ## 多处理器编程
+Three Easy Pieces: 并发
+<span style='color:blue'>
+</span>
+<details>
+  <summary style='color:darkcyan'>
+  什么是并发
+  </summary>
+  <p style='color:darkcyan'>
+Concurrent: existing, happening, or done at the same time.
+  </p>
+</details>
+
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px; font-family:"Source Code Pro"; font-size:14px'>
+ In computer science, concurrency refers to the ability of different parts or units of a program, algorithm, or problem to be executed out-of-order or in partial order, without affecting the final outcome.
+  <div style='text-align:right;padding:0 15px;'> --( Wikipedia )
+  </div>
+</div>
+
+> 为什么在这门课 (先) 讲并发？
+
++ 讲并发
+	+ 操作系统是最早的并发程序之一
+	+ 今天遍地都是多处理器系统 (为什么？)
++ 先讲并发
+	+ 实验是 `bottom-up` 的 (L1: 多处理器上的 `	malloc/free)`
+
+
+并发的基本单位：线程
+共享内存的多个执行流
+执行流拥有独立的堆栈/寄存器
+共享全部的内存 (指针可以互相引用)
+用状态机的视角就很容易理解了！
+
+### 入门： 简化的线程 API
+
+我们为大家封装了超级好用的线程 API **( [thread.h](OS.Demo/thread.h) )**
+
++ **`create(fn)`**
+	+ 创建一个入口函数是 fn 的线程，并立即开始执行
+		+  `void fn(int tid) { ... }`
+		+ 参数 tid 从 1 开始编号
+	+ 语义：在状态中新增 stack frame 列表并初始化为 fn(tid)
++ **`join()`**
+	+ 等待所有运行线程的 fn 返回
+	+ 在 main 返回时会自动等待所有线程结束
+	+ 语义：在有其他线程未执行完时死循环，否则返回
++ 编译时需要增加 `-lpthread`
+
+
+入门 (cont'd)
+
+> Hello, Multi-threaded World!
+
+```c
+#include "thread.h"
+
+void Ta() { while (1) { printf("a"); } }
+void Tb() { while (1) { printf("b"); } }
+
+int main() {
+  create(Ta);
+  create(Tb);
+}
+```
+利用 thread.h 就可以写出利用多处理器的程序！
+
+操作系统会自动把线程放置在不同的处理器上
+在后台运行，可以看到 CPU 使用率超过了 100%
+入门 (cont'd)
+会编程，你就拥有全世界！
+
+如何证明线程确实共享内存？
+
+[shm-test.c](./OS.Demo/shm-test.c)
+如何证明线程具有独立堆栈 (以及确定它们的范围)？
+
+[stack-probe.c](./OS.Demo/stack-probe.c)(输出有点乱？我们还有 sort!)
+更多的习题
+
+创建线程使用的是哪个系统调用？
+能不能用 gdb 调试？
+基本原则：有需求，就能做到 (RTFM)
+man 7 pthreads
+
+thread.h 背后：POSIX Threads
+想进一步配置线程？
+
+设置更大的线程栈
+设置 detach 运行 (不在进程结束后被杀死，也不能 join)
+……
+POSIX 为我们提供了线程库 (pthreads)
+
+man 7 pthreads
+练习：改写 thread.h，使得线程拥有更大的栈
+可以用 stack-probe.c 验证
+然而，可怕的事情正在悄悄逼近……
+
+多处理器系统中线程的代码可能同时执行
+两个线程同时执行 x++，结果会是什么呢？
+### 放弃 : 原子性
+
+例子：山寨多线程支付宝
+```c
+unsigned int balance = 100;
+int Alipay_withdraw(int amt) {
+  if (balance >= amt) {
+    balance -= amt;
+    return SUCCESS;
+  } else {
+    return FAIL;
+  }
+} 
+// 2**64 -100
+```
+两个线程并发支付 ¥100 会发生什么？[alipay.c](./OS.Demo/alipay.c)
+
+账户里会多出用不完的钱！
+Bug/漏洞不跟你开玩笑：Mt. Gox Hack 损失 650,000
+今天价值 $28,000,000,000
+
+例子：求和
+分两个线程，计算$1+1+1\cdots+1$ ( 共计 $2n$ 个 )
+
+```c
+#define N 100000000
+long sum = 0;
+
+void Tsum() { for (int i = 0; i < N; i++) sum++; }
+
+int main() {
+  create(Tsum);
+  create(Tsum);
+  join();
+  printf("sum = %ld\n", sum);
+}
+```
+
+
+[sum.c](./OS.Demo/sum.c) 运行结果
+
+119790390, 99872322 (结果可以比 N 还要小), ...
+Inline assembly 也不行
+
+只有加了lock `asm volatile("lock add $1,%0": "+m"(sum));`
+在 fish 里 `while true; ./a.out; end` 来循环运行程序
+
+当然我们可以将这个程序限制在一个CPU内将会得到正确的答案
+
+```bash
+taskset -c 0 mycommand --option  # start a command with the given affinity
+taskset -c -pa 0 1234            # set the affinity of a running process
+```
+使用下面这个命令就能将运行 `a.out` 时将该程序限制在一个 CPU 内
+```bash
+taskset -c 0 ./a.out --option
+```
+![alt](./OS.assets/2022-07-31_22-37.png)
+
+**原子性的丧失**
+
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+ “程序 (甚至是一条指令) 独占处理器执行” 的基本假设在现代多处理器系统上不再成立。 
+</div>
+
+
+原子性：一段代码执行 (例如 pay()) 独占整个计算机系统
+
+单处理器多线程
+线程在运行时可能被中断，切换到另一个线程执行
+多处理器多线程
+线程根本就是并行执行的
+(历史) 1960s，大家争先在共享内存上实现原子性 (互斥)
+
+但几乎所有的实现都是错的，直到 [Dekker's Algorithm](https://en.wikipedia.org/wiki/Dekker%27s_algorithm)，还只能保证两个线程的互斥
+
+
+原子性的丧失：有没有感到后怕？
+printf 还能在多线程程序里调用吗？
+
+void thread1() { while (1) { printf("a"); } }
+void thread2() { while (1) { printf("b"); } }
+我们都知道 printf 是有缓冲区的 (为什么？)
+
+如果执行 `buf[pos++] = ch` (pos 共享) 不就 💥 了吗？
+RTFM!
+
+实现原子性
+互斥和原子性是本学期的重要主题
+
++ lock(&lk)
++ unlock(&lk)
+	+ 实现临界区 (critical section) 之间的绝对串行化
+	+ 程序的其他部分依然可以并行执行
+
+**99% 的并发问题都可以用一个队列解决**
+
++ 把大任务切分成可以并行的小任务
++ worker thread 去锁保护的队列里取任务
++ 除去不可并行的部分，剩下的部分可以获得线性的加速
+Thm.$T_n \lt T_{\infty} + \frac{T_1}{n}$ ([PDC](https://web.mit.edu/dimitrib/www/pdc.html), Chap. 1)
+
+### 放弃 ： 顺序
+例子：求和 (再次出现)
+
+分两个线程，计算$1+1+1\cdots+1$ ( 共计 $2n$ 个 )
+
+```c
+#define N 100000000
+long sum = 0;
+
+void Tsum() { for (int i = 0; i < N; i++) sum++; }
+
+int main() {
+  create(Tsum);
+  create(Tsum);
+  join();
+  printf("sum = %ld\n", sum);
+}
+```
+我们好像忘记给 [sum.c](OS.Demo/sum.c) 添加编译优化了？
+
++ -O1: 100000000 😱😱
++ -O2: 200000000 😱😱😱
+![alt](./OS.assets/2022-08-01_00-17.png)
 
 
 ## 理解并发程序执行

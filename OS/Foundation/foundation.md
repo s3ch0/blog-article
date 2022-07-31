@@ -1319,7 +1319,7 @@ while (len) {
 
 不同版本、不同编译器、不同语言的二进制文件都可以链接
 + 他们需要一个 “共同语言”
-	+ 例如我们熟悉的 x86 calling convention
+	+ 例如我们熟悉的 `x86 calling convention`
 
 ---
 + cdecl (Linux)
@@ -1328,29 +1328,28 @@ while (len) {
 只要遵循标准的函数就可以互相调用
 
 
-Application Binary Interface (ABI)
-区别于 API (Application Programming Interface)
+**Application Binary Interface (ABI)**
++ 区别于 API (Application Programming Interface)
 
 程序源代码中的规范
 ABI：约定 binary 的行为
 
-二进制文件的格式
-函数调用、系统调用……
-C 语言规范只定义了运行时内存和内存上的计算
-printf 都无法实现，必须借助外部库函数
-链接、加载的规范
++ 二进制文件的格式
++ 函数调用、系统调用……
+  + C 语言规范只定义了运行时内存和内存上的计算
+  + printf 都无法实现，必须借助外部库函数
++ 链接、加载的规范
 
 
 例子：cdecl 函数调用
 caller stack frame:
++ 所有参数以数组的形式保存在堆栈上 (所以才有 “反序压栈”)
++ 然后是返回地址
++ 跳转到 callee
 
-所有参数以数组的形式保存在堆栈上 (所以才有 “反序压栈”)
-然后是返回地址
-跳转到 callee
 callee:
-
-EAX 作为返回值
-其他寄存器都是 callee save
++ EAX 作为返回值
++ 其他寄存器都是 callee save
 
 ```c
 void bar(int *);
