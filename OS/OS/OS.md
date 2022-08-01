@@ -591,7 +591,7 @@ movq $SYS_exit,  %rax   # exit(
 movq $1,         %rdi   #   status=1
 syscall                 # );
 ```
-Note: gcc 支持对汇编代码的预编译 (还会定义 __ASSEMBLER__ 宏)
+Note: gcc 支持对汇编代码的预编译 (还会定义 `__ASSEMBLER__` 宏)
 
 ~~我是从哪里获得这些黑科技代码的？？？~~
 
@@ -639,7 +639,7 @@ $$
 现代 (与未来的) 编译优化
 在保证观测一致性 (sound) 的前提下改写代码 (rewriting)
 
-+ Inline assembly 也可以参与优化
++ [Inline assembly](http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html) 也可以参与优化
 	+ 其他优化可能会跨过不带 barrier 的 asm volatile
 + Eventual memory consistency
 + Call to external CU = write back visible memory
@@ -912,33 +912,33 @@ int main() {
 会编程，你就拥有全世界！
 
 如何证明线程确实共享内存？
++ [shm-test.c](./OS.Demo/shm-test.c)
 
-[shm-test.c](./OS.Demo/shm-test.c)
 如何证明线程具有独立堆栈 (以及确定它们的范围)？
++ [stack-probe.c](./OS.Demo/stack-probe.c)
+	+ (输出有点乱？我们还有 sort!)
 
-[stack-probe.c](./OS.Demo/stack-probe.c)(输出有点乱？我们还有 sort!)
 更多的习题
++ 创建线程使用的是哪个系统调用？
++ 能不能用 gdb 调试？
++ 基本原则：有需求，就能做到 ( [RTFM](https://sourceware.org/gdb/onlinedocs/gdb/Threads.html))
 
-创建线程使用的是哪个系统调用？
-能不能用 gdb 调试？
-基本原则：有需求，就能做到 (RTFM)
-man 7 pthreads
+> thread.h 背后：POSIX Threads
 
-thread.h 背后：POSIX Threads
 想进一步配置线程？
 
-设置更大的线程栈
-设置 detach 运行 (不在进程结束后被杀死，也不能 join)
-……
++ 设置更大的线程栈
++ 设置 detach 运行 (不在进程结束后被杀死，也不能 join)
++ ……
+
 POSIX 为我们提供了线程库 (pthreads)
++ man 7 pthreads
++ 练习：改写 thread.h，使得线程拥有更大的栈
+	+ 可以用 stack-probe.c 验证
 
-man 7 pthreads
-练习：改写 thread.h，使得线程拥有更大的栈
-可以用 stack-probe.c 验证
 然而，可怕的事情正在悄悄逼近……
-
-多处理器系统中线程的代码可能同时执行
-两个线程同时执行 x++，结果会是什么呢？
++ 多处理器系统中线程的代码可能同时执行
+	+ 两个线程同时执行 x++，结果会是什么呢？
 ### 放弃 : 原子性
 
 例子：山寨多线程支付宝
@@ -981,6 +981,7 @@ int main() {
 [sum.c](./OS.Demo/sum.c) 运行结果
 
 119790390, 99872322 (结果可以比 N 还要小), ...
+
 Inline assembly 也不行
 
 只有加了lock `asm volatile("lock add $1,%0": "+m"(sum));`
@@ -1066,10 +1067,213 @@ int main() {
 ![alt](./OS.assets/2022-08-01_00-17.png)
 
 
+
+<font color='red' face=Monaco size=3>顺序的丧失</font> 
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+ 编译器对内存访问 “eventually consistent” 的处理导致共享内存作为线程同步工具的失效。
+</div>
+
+
+刚才的例子
+
++ -O1: `R[eax] = sum; R[eax] += N; sum = R[eax]`	
++ -O2: `sum += N;`
+(你的编译器也许是不同的结果)
+另一个例子
+
+```c
+while (!done);
+// would be optimized to
+if (!done) while (1);
+```
+
+实现源代码的按顺序翻译<br>
+在代码中插入 “优化不能穿越” 的 barrier
++ `asm volatile ("" ::: "memory");`
+	+ Barrier 的含义是 “可以读写任何内存”
++ 使用 volatile 变量
+	+ 保持 C 语义和汇编语义一致
+```c
+extern int volatile done;
+while (!done) ;
+```
+
+### 放弃 (3)：可见性
+
+例子
+```c
+int x = 0, y = 0;
+
+void T1() {
+  x = 1;
+  asm volatile("" : : : "memory"); // compiler barrier
+  printf("y = %d\n", y);
+}
+
+void T2() {
+  y = 1;
+  asm volatile("" : : : "memory"); // compiler barrier
+  printf("x = %d\n", x);
+}
+```
+问题：我们最终能看到哪些结果？
+
++ [mem-ordering.c](OS.Demo/mem-ordering.c)
+	+ 输出不好读？ `pipe to head -n 1000000 | sort | uniq -c`
+
+我们会发现出现了一个我们意想不到的结果 `0 0`
+根据我们状态机，程序不可能会输出 `0 0`
+![alt](./OS.assets/2022-08-01_11-07.png)
+
+当我们加了 `mfence;` 指令后程序输出了 "正确的结果"
+![alt](./OS.assets/2022-08-01_11-12.png)
+
+> 现代处理器：处理器也是 (动态) 编译器！
+
+单个处理器把汇编代码 (用电路) “编译” 成更小的 $\mu ops$
+
++ RF[9] = load(RF[7] + 400)
++ store(RF[12], RF[13])
++ RF[3] = RF[4] + RF[5]
+	+ 每个 $\mu op$ 都有 Fetch, Issue, Execute, Commit 四个阶段
+
+
+在任何时刻，处理器都维护一个 $\mu op$ 的 “池子”
+
++ 每一周期向池子补充尽可能多的 $\mu op$
+	+ “多发射”
++ 每一周期 (在不违反编译正确性的前提下) 执行尽可能多的 $\mu op$
+	+ “乱序执行”、“按序提交”
++ 这就是《计算机体系结构》 (剩下就是木桶效应，哪里短板补哪里)
+
+
+多处理器间即时可见性的丧失
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+满足单处理器 eventual memory consistency 的执行，在多处理器上可能无法序列化！
+</div>
+
+当 $x \neq y$  时，对 $x$ , $y$ 的内存读写可以交换顺序
+
++ 它们甚至可以在同一个周期里完成 (只要 load/store unit 支持)
++ 如果写 $x$ 发生 cache miss，可以让读 $y$ 先执行
+	+ 满足 “ 尽可能执行 $\mu op$ ” 的原则，最大化处理器性能
+
+```armasm
+     # <-----------+
+movl $1, (x)   #   |
+movl (y), %eax # --+
+```
++ 在多处理器上的表现
+	+ 两个处理器分别看到 $y = 0$ 和 $x = 0$
+
+**宽松内存模型 (Relaxed/Weak Memory Model)**
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+宽松内存模型的目的是使单处理器的执行更高效。
+</div>
+
+x86 已经是市面上能买到的 “最强” 的内存模型了 😂
+
++ 这也是 Intel 自己给自己加的包袱
++ 看看 [ARM/RISC-V](https://research.swtch.com/mem-weak@2x.png) 吧，根本就是个分布式系统
+
+<div align='center'>
+  <img src='./OS.assets/x86-tso.png' width='60%' styles='text-align:center;'>
+  <div>
+  </div>
+( x86-TSO in  <a href="https://research.swtch.com/hwmm">Hardware memory models</a> by Russ Cox )<br>
+<a href="./OS.assets/hwmm.pdf">Download PDF Link</a>
+</div>
+
+**实现顺序一致性**
+
+<div align='center'>
+  <img src='./OS.assets/sc.png' width='75%' styles='text-align:center;'>
+</div>
+
+软件做不到，硬件来帮忙
+
++ Memory barrier: `__sync_synchronize()` ( [RTFM](https://gcc.gnu.org/onlinedocs/gcc/_005f_005fsync-Builtins.html) )
+	+ Compiler barrier + fence 指令
+	+ 插入 fence 指令后，将阻止 $x = y = 0$
++ 原子指令 (lock prefix, lr/sc, ...)
+	+ `stdatomic.h`
+
+### 总结
+
+本次课回答的问题
++ [x] Q: 如何理解多处理器系统？
+
+> Take-away message
+
++ 多处理器编程：入门
+	+ 多处理器程序 = 状态机 (共享内存；非确定选择线程执行)
+	+ thread.h = create + join
++ 多处理器编程：放弃你对 “程序” 的旧理解
+	+ 不原子、能乱序、不立即可见
+		+ 来自于编译优化 (处理器也是编译器)
+		+ [Ad hoc synchronization considered harmful (OSDI'10)](https://www.usenix.org/legacy/events/osdi10/tech/full_papers/Xiong.pdf) 
+			+ [Download PDF Link](./OS.assets/Xiong.pdf)
+
+
 ## 理解并发程序执行
 
+### 画状态机
 
+**一个互斥算法**
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+互斥：保证两个线程不能同时执行一段代码。
+</div>
 
+插入 “神秘代码”，使得 sum.c (或者任意其他代码) 能够正常工作
+
+```c
+void Tsum() {
+  // 神秘代码
+  sum++;
+  // 神秘代码
+}
+```
+
+假设一个内存的读/写可以保证顺序、原子完成
+
+```c
+__sync_synchronize();
+x = 1; // 或 int t = x;
+__sync_synchronize();
+```
+
+失败的尝试
+
+```c
+int locked = UNLOCK;
+
+void critical_section() {
+retry:
+  if (locked != UNLOCK) {
+    goto retry;
+  }
+  locked = LOCK;
+
+  // critical section
+
+  locked = UNLOCK;
+}
+```
+
+和山寨 [alipay.c](./OS.Demo/alipay.c) 完全一样的错误
++ 处理器默认不保证 `load + store` 的原子性
+
+#### `Peterson 算法`
+
+正确性不明的奇怪尝试 (Peterson 算法)
+A 和 B 争用厕所的包厢
+
+想进入包厢之前，A/B 都要先举起自己的旗子
+A 确认旗子举好以后，往厕所门上贴上 “B 正在使用” 的标签
+B 确认旗子举好以后，往厕所门上贴上 “A 正在使用” 的标签
+然后，如果对方的旗子举起来，且门上的名字不是自己，等待
+否则可以进入包厢
+出包厢后，放下自己的旗子
 
 ## 并发控制
 
