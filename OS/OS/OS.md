@@ -4,7 +4,6 @@
 ![operatingsystemsiconslinuxwindowsandroidmaciosiconsvector.jpg](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/56354a5b6630b31c15d5e9a0133ad33d.jpg)
 + [视频链接](https://space.bilibili.com/202224425/video)
 + [课件链接](http://jyywiki.cn/OS/2022/)
-+ [Lab链接](https://nju-projectn.github.io/ics-pa-gitbook/ics2021/PA0.html)
 + [阅读材料链接](http://jyywiki.cn/OS/OS_References)
 
 ## 操作系统概述
@@ -1268,12 +1267,209 @@ retry:
 正确性不明的奇怪尝试 (Peterson 算法)
 A 和 B 争用厕所的包厢
 
-想进入包厢之前，A/B 都要先举起自己的旗子
-A 确认旗子举好以后，往厕所门上贴上 “B 正在使用” 的标签
-B 确认旗子举好以后，往厕所门上贴上 “A 正在使用” 的标签
-然后，如果对方的旗子举起来，且门上的名字不是自己，等待
-否则可以进入包厢
-出包厢后，放下自己的旗子
++ 想进入包厢之前，A/B 都要先举起自己的旗子
+	+ A 确认旗子举好以后，往厕所门上贴上 “B 正在使用” 的标签
+	+ B 确认旗子举好以后，往厕所门上贴上 “A 正在使用” 的标签
++ 然后，如果对方的旗子举起来，且门上的名字不是自己，等待
+	+ 否则可以进入包厢
++ 出包厢后，放下自己的旗子
+
+**Prove by Brute-force!**<br>
+枚举状态机的全部状态 (假设没有乱序、每步执行一行)
++ $PC_1 , PC_2,x,y,turn$; [peterson-simple.c](./OS.Demo/peterson-simple.c)
+
+```c
+void TA() {
+    while (1) {
+/* PC=1 */  x = 1;
+/* PC=2 */  turn = B;
+/* PC=3 */  while (y && turn == B) ;
+            critical_section();
+/* PC=4 */  x = 0; } }
+void TB() {
+  while (1) {
+/* PC=1 */  y = 1;
+/* PC=2 */  turn = A;
+/* PC=3 */  while (x && turn == A) ;
+            critical_section();
+/* PC=4 */  y = 0; } }
+```
+
+
+Peterson's Protocol Verified 🎖
+
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+我们 (在完全不理解算法的前提下) 证明了 Sequential 内存模型下 Peterson's Protocol 的 Safety。它能够实现互斥。
+</div>
+
+
+
+并发编程比大家想象得困难
+
++ 感受一下 [dekker.py](OS.Demo/dekker.py)
+
++ "[Myths about the mutual exclusion problem](https://zoo.cs.yale.edu/classes/cs323/doc/Peterson.pdf)" (IPL, 1981)
+
+
+和一些现状
++ 今天有非常坚 (内) 实 (卷) 的理论体系
++ 小心编译器和多处理器硬件
+	+ [peterson-barrier.c](./OS.Demo/peterson-barrier.c) (哪些 barrier 是多余的吗？)
++ [The Art of multiprogramming](./OS.assets/Theartofmulticore.pdf)
+
+![alt](./OS.assets/2022-08-02_21-42.png)
+
+画状态机实在太累了
+并发算法的设计困境
+
+不敢不画：谁知道有什么奇怪情况会发生？
+不敢乱画：画错了就都完了
+解决困境 💡
+
+能不能让电脑帮我们画？
+我们有程序的形式语义 (数学定义)，就能写解释器模拟执行
+说起来容易，但需要写多少代码呢……
+
+年轻人的第一个 Model Checker
+
+
+选择正确的语言
++ 当然是 Python 啦
++ 容易 hack 的动态语言
++ 丰富的库函数
+
+选正确的语言机制
++ **[model-checker.py](./OS.Demo/model-checker.py) **
+	+ ~~代码量达到了惊人的 150 行！~~
+	+ UNIX Philosophy: 写能合作的程序
+		+ Model checker 只负责输出 “状态图”
++ 试试威力：[mutex-bad.py](./OS.Demo/mutex-bad.py), [peterson-flag.py](./OS.Demo/peterson-flag.py), [dekker.py](./OS.Demo/dekker.py)
+	+ 我们的输出格式有什么特别的用意吗？
+
+[visualize.py](./OS.Demo/visualize.py)
+
+
+
+代码导读：Python Generator
+死循环也能返回？
+
+```python
+
+def numbers(init=0, step=1):
+    n = init
+    while True:
+        n += step
+        yield n
+```
+
+```shell
+>>> g = numbers()
+>>> g
+<generator object numbers at 0x107f873c0>
+>>> g.__next__()
+1
+>>> g.__next__()
+2
+```
+这个生成器对象其实就是一个状态机，而当我们生成了多个生成器对象时，各自执行 `__next__` 其实就相当于并发执行
+
+```python
+T1 = numbers()
+T2 = numbers()
+T1.__next__() # 相当于 T1 线程执行了一步
+T2.__next__() # 相当于 T2 线程执行了一步
+```
+我们可以使用 pdb 在终端对python程序进行调试 断点处加 `breakpoint()`
+
+> Generator: 也是状态机
+
+g = numbers() 是一个状态机 (类似是线程，但不并发执行)
++ `g.__next__()` 会切换到状态机执行，直到 yield
++ 状态机返回会触发 StopIteration 异常
+
+在 C 语言里同样可以实现 (MiniLab 2)
++ 只要为状态机分配栈空间和寄存器即可
++ yield() 切换到另外的状态机/线程执行
+
+
+Model Checker: 实现
+```python
+class Mutex:
+    locked = ''
+
+    def T1(self):
+        yield checkpoint()
+        while True:
+            yield checkpoint()
+            while self.locked == '🔒':
+                yield checkpoint()
+                pass
+            yield checkpoint()
+            self.locked = '🔒'
+            ...
+```
+
+```python
+thread_state = mutex_obj().T1()
+thread_state.__next__() # 单步执行一行; see: execute()
+```
+
+Model Checker: 实现 (cont'd)
+什么是状态空间？
+
+所有可能的状态机执行序列
+BFS 生成，合并重复状态
+```text
+[0]      T1
+[1]      T2
+[0,0]    T1 -> T1
+[0,1]    T1 -> T2
+[0,0,0]  T1 -> T1 -> T1
+[0,0,1]  T1 -> T1 -> T2
+[0,1,0]  T1 -> T2 -> T1
+...      ...
+```
+
+### Model Checking
+
+Model Checker
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;font-family:"Source Code Pro"'>
+Model checking is a method for formally verifying finite-state systems——只要能为系统建立模型，就能用 prove by brute-force 证明正确/找到错误。
+</div>
+
+Model checker 的一切就是状态机！
+
++ Safety: 红色的状态不可到达
+	+ $G(V,E)$ 上的可达性问题
++ (Strong) Liveness: 从任意状态出发，都能到达绿/蓝色状态
+	+ $G(V,E)$ 上的什么问题？
++ 如何展示这个状态机？
++ 如何能避免无效的探索？
+
+更多的 Model Checker
+真实程序的状态空间太大？
+
++ [Model checking for programming languages using VeriSoft](https://dl.acm.org/doi/abs/10.1145/263699.263717) (POPL'97, 第一个 “software model checker”)
++ [Finding and reproducing Heisenbugs in concurrent programs ](https://dl.acm.org/doi/10.5555/1855741.1855760)(OSDI'08, Small Scope Hypothesis 🪳🪳🪳)
++ [Using model checking to find serious file system errors](https://dl.acm.org/doi/10.1145/1189256.1189259) (OSDI'04, Best Paper 🏅，可以用在不并发的系统上)
+
+不满足于简单的内存模型？
++ [VSync: Push-button verification and optimization for synchronization primitives on weak memory models](https://dl.acm.org/doi/abs/10.1145/3445814.3446748) (ASPLOS'21, Distinguished Paper 🏅)
+
+工具的故事
+没有人能阻止程序员写 bug，但工具可以。
+
+至今为止我们用过的自动化工具 (他们拯救了你无数次)
+
+Type safety check
+-Wall -Werror
+Differential testing
+Model checker
+……
+这门课的另一个 take-away
+
+操作系统是一个巨大的工程
+没有工具 (编程、测试、调试……)，不做系统
 
 ## 并发控制
 
