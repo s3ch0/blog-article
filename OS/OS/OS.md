@@ -1449,29 +1449,83 @@ Model checker 的一切就是状态机！
 更多的 Model Checker
 真实程序的状态空间太大？
 
-+ [Model checking for programming languages using VeriSoft](https://dl.acm.org/doi/abs/10.1145/263699.263717) (POPL'97, 第一个 “software model checker”)
-+ [Finding and reproducing Heisenbugs in concurrent programs ](https://dl.acm.org/doi/10.5555/1855741.1855760)(OSDI'08, Small Scope Hypothesis 🪳🪳🪳)
-+ [Using model checking to find serious file system errors](https://dl.acm.org/doi/10.1145/1189256.1189259) (OSDI'04, Best Paper 🏅，可以用在不并发的系统上)
++ **[Model checking for programming languages using VeriSoft](https://dl.acm.org/doi/abs/10.1145/263699.263717)** (POPL'97, 第一个 “software model checker”)
+	+  [Download Link](./OS.assets/263699.263717.pdf)
++ **[Finding and reproducing Heisenbugs in concurrent programs ](https://dl.acm.org/doi/10.5555/1855741.1855760)**(OSDI'08, Small Scope Hypothesis 🪳🪳🪳) 
+	+ [Download Link](./OS.assets/musuvathi.pdf)
++ **[Using model checking to find serious file system errors](https://dl.acm.org/doi/10.1145/1189256.1189259)** (OSDI'04, Best Paper 🏅，可以用在不并发的系统上) 
+	+ [Download Liink](./OS.assets/yang.pdf)
 
 不满足于简单的内存模型？
-+ [VSync: Push-button verification and optimization for synchronization primitives on weak memory models](https://dl.acm.org/doi/abs/10.1145/3445814.3446748) (ASPLOS'21, Distinguished Paper 🏅)
++ **[VSync: Push-button verification and optimization for synchronization primitives on weak memory models](https://dl.acm.org/doi/abs/10.1145/3445814.3446748)** (ASPLOS'21, Distinguished Paper 🏅) [Download Link](./OS.assets/3445814.3446748.pdf)
 
 工具的故事
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
 没有人能阻止程序员写 bug，但工具可以。
+</div>
 
 至今为止我们用过的自动化工具 (他们拯救了你无数次)
 
-Type safety check
--Wall -Werror
-Differential testing
-Model checker
-……
-这门课的另一个 take-away
++ Type safety check
++ -Wall -Werror
++ Differential testing
++ Model checker
++ ……
 
-操作系统是一个巨大的工程
-没有工具 (编程、测试、调试……)，不做系统
+这门课的另一个 take-away
++ 操作系统是一个巨大的工程
++ 没有工具 (编程、测试、调试……)，不做系统
 
 ## 并发控制
+
+### 共享内存上的互斥
+**回顾：并发编程**
+
+> 理解并发的工具
++ 线程 = 人 (大脑能完成局部存储和计算)
++ 共享内存 = 物理世界 (物理世界天生并行)
++ 一切都是状态机
+
+<div align='center'>
+  <img src='./OS.assets/wc.jpg' width='70%' styles='text-align:center;'>
+  <div>
+  “躲进厕所锁上门，我就把全世界人锁在了厕所外”
+  </div>
+</div>
+
+<br>
+
+**回顾：互斥算法**
+
+互斥 (mutual exclusion)，“互相排斥”
++ 实现 lock_t 数据结构和 lock/unlock API:
+
+```c
+typedef struct {
+  ...
+} lock_t;
+void lock(lock_t *lk);
+void unlock(lock_t *lk);
+```
+
+一把 “排他性” 的锁——对于锁对象 lk
++ 如果某个线程持有锁，则其他线程的 lock 不能返回
+
+在共享内存上实现互斥
+
+失败的尝试
++ [mutex-bad.py](./OS.Demo/mutex-bad.py)
+
+(部分) 成功的尝试
++ [peterson-barrier.c](./OS.Demo/peterson-barrier.c)
+
+实现互斥的根本困难：不能同时读/写共享内存
++ load (环顾四周) 的时候不能写，只能 “看一眼就把眼睛闭上”
+	+ 看到的东西马上就过时了
++ store (改变物理世界状态) 的时候不能读，只能 “闭着眼睛动手”
+	+ 也不知道把什么改成了什么
++ 这是~~简单、粗暴 (稳定)、有效的~~《操作系统》课
+
 
 ### 互斥
 

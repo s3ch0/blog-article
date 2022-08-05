@@ -21,6 +21,7 @@ man 的基本使用:
 
 
 关于 IO 操作相关的 API
+
 ```c
 fopen();
 fclose();
@@ -41,7 +42,7 @@ fflush();
 
 ### 标准IO
 
-stdio: FILE 类型贯穿始终
+**stdio: FILE 类型贯穿始终**
 
 <font color="red" face=Monaco size=3>关于Unix 环境编程的报错机制  </font>
 
@@ -63,7 +64,6 @@ int main(){
 	return 0;
 }
 ```
-
 
 ```c
 // vim /usr/include/asm-generic/errno-base.h
@@ -120,7 +120,6 @@ int main(){
 有开启和释放成对操作都是在堆上，而没有成对操作的可能在堆上，也可能在静态区
 
 + 如果在栈上，不能返回局部变量的地址,当fopen()函数调用结束，局部变量都被释放掉了
-
 + 静态区里共用同一块空间，所以如果在静态区，那么后一次使用的 fopen() 会把上一次使用的fopen()的结果覆盖
 
 
@@ -172,7 +171,6 @@ int main() {
 oct(0o666 & (~umask))
 ```
 所以 umask 值越大,默认创建出来的文件权限就越低
-
 
 
 
@@ -241,7 +239,6 @@ fgets(buf,SIZE,stream);
 
 ```c
 fgets()
-
 ```
 
 ```c
@@ -321,7 +318,6 @@ int main(){
 	while(1);
 	printf("After while death loop");
 	// if you not use fflush then you will see nothing output in the terminal!
-	
 	// fflush(NULL);
 }
 ```
@@ -352,7 +348,6 @@ They were standardized in POSIX.1-2008.
 ```
 
 
-
 <font color="red" face=Monaco size=3> 临时文件的一些问题： </font>
 
 1. 如何创建临时文件不冲突
@@ -364,8 +359,6 @@ They were standardized in POSIX.1-2008.
 **匿名文件：在磁盘上看不见，只获得了一个 `FILE *` `ls -a` 并不能查看匿名文件**
 
 <font color="gray" face=Monaco size=3> 一个文件如果说没有任何的硬链接指向它，而当前文件的打开计数又已经成为 0 值，那么这块数据就会被操作系统释放 </font>
-
-
 
 
 
@@ -622,7 +615,6 @@ int main(int argc, char **argv) {
 `man inode` 查看关于目录的内容
 
 
-
 **获取文件属性**
 
 ```c
@@ -667,6 +659,7 @@ int main(int argc, char **argv) {
 ```
 
 #### 文件访问权限
+
 `st_mode` 是一个16位的位图，用于表示文件类型，文件访问权限，及特殊权限位
 
 
@@ -715,19 +708,82 @@ t位
 文件系统：文件或数据的存储和管理
 
 FAT/16/32 实质是静态存储的单链表 (arr)
+UFS 文件系统
+
+`link()/unlink()/remove()/rename()`
+
+
+> 我们可以使用 `unlink()` 来生成匿名文件，使用 `open()` 创建一个文件后，立马使用 `unlink()` 这个直到执行`close()` 才会被释放 
 
 
 
 #### 硬链接/符号链接
+
++ 硬链接
+  + 硬链接与目录项是同义词
+  + 硬链接就相当于两个指针指向同一个空间
+  + <font color='red' face=Monaco size=3>不能给分区建立，不能给目录建立硬链接</font> 
++ 符号链接
+  + 相当于 Windows 下的快捷方式
+  + <font color='red' face=Monaco size=3>编辑符号链接文件时,会改变源文件内容</font> 
+
+<table>
+  <tr>
+    <td>硬链接</td>
+    <td>符号链接</td>
+  </tr>
+  <tr>
+    <td><img src='./Linux_Kernel.assets/2022-08-03_18-30.png' width='250px'></td>
+    <td><img src='./Linux_Kernel.assets/2022-08-03_18-43.png' width='220px'></td>
+  </tr>
+</table>
+
+
+
+
 #### utime
+
+`utime` 可以更改文件最后一次读和写的时间
+
++ `atime` 最后一次进入文件的时间
+  + `Access timestamp (atime): which indicates the last time a file was accessed.`
++ `mtime` 最后一次修改文件内容的时间
+  + `Modified timestamp (mtime): which is the last time a file’s contents were modified.`
++ `ctime` 最后一次修改文件元数据的时间
+  + `Change timestamp (ctime): which refers to the last time some metadata related to the file was changed`
+---
+
+
+<font color='red' face=Monaco size=3>`ctime` 不是文件创建时间</font>
 
 
 #### 目录的创建和销毁
++ mkdir
++ rmdir
 
 #### 更改当前工作路径
++ chdir
++ fchdir
++ getcwd
 
 
 #### 分析目录/读取目录内容
+
+`glob`
+
+
+递归： 如果一个变量完全在递归点之前使用,或者说只在递归点之后出现，那么该变量能存放在静态区或声明成全局变量
+
+使用 pattern 不包含隐藏文件
+
+[extract the bits from st_mode ](https://stackoverflow.com/questions/35375084/c-unix-how-to-extract-the-bits-from-st-mode#:~:text=st_mode%20is%20of%20type%20mode_t,back%20from%20text%20to%20native)
+
+opendir
+closedir
+readdir(3)
+rewinddir
+seekdir
+telldir
 
 
 
@@ -735,6 +791,46 @@ FAT/16/32 实质是静态存储的单链表 (arr)
 
 
 ### 系统数据文件和信息
+`/etc/passwd`
+`/etc/shadow`
+`/etc/group`
+
+为什么不直接去这三个文件里找用户信息?
++ 因为在某些系统里可能并存在这三个文件 
+  + 如: FreeBSD $\rightarrow$ BDB 数据库
+  + HP Unix $\rightarrow$ file system 26个文件夹存放
+  + Linux 大多会采用上面三个文件来进行存储
+
+```c
+#include <sys/types.h>
+#include <pwd.h>
+getpwuid();
+getpwnam();
+```
+
+```c
+#include <sys/types.h>
+#include <grp.h>
+getgrgid();
+getgrnam();
+```
+加密: 安全: 攻击成本大于收益
+
++ 口令的随机校验
+
+第一个字段：加密方式
+第二个字段：salt值
+第三个字段：加密后的字符串
+```c
+#include <shadow.h>
+#include <crypt.h>
+getspnam();
+getspent();
+crypt(); // version
+```
+
+
+#### 时间戳
 
 
 ### 进程环境

@@ -15,6 +15,36 @@
 echo 500 | sudo tee /sys/class/backlight/intel_backlight/brightness
 ```
 
+![](./Missing_Semester.assets/2022-08-03_13-01.png)
+
++ [X] **HomeWork**
+
+<span style='color:blue'>
+</span>
+<details>
+  <summary style='color:darkcyan'>
+  Detail 
+  </summary>
+  <p style='color:darkcyan'>
+	Write a command that reads out your laptop battery’s power level or your desktop machine’s CPU temperature from /sys
+  </p>
+</details>
+
+查看电脑的电量剩余
+```bash
+cat /sys/class/power_supply/BAT0/capacity
+```
+
+```bash
+cat /sys/class/thermal/thermal_zone0/temp # maybe  divide 1000
+```
+
+这时候我们得到的是一个整数，如果我们想要得到摄氏度 `°C` 我们要将结果除以 1000
+```bash
+cpu_temp=$(cat /sys/class/thermal/thermal_zone0/temp)
+result=$(($cpu_temp / 1000))
+```
+
 
 ### Shell 编程
 
