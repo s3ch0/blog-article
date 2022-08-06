@@ -828,12 +828,380 @@ getspnam();
 getspent();
 crypt(); // version
 ```
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <crypt.h>
+#include <shadow.h>
+#include <assert.h>
+#include <string.h>
+
+
+int main(int argc,char **argv){
+	assert(argc >= 2);
+	char* crypted_pass;
+	char* input_pass;
+	char* setting;
+	struct spwd *shadow_line;
+	input_pass = getpass("Please enter your password:");
+	shadow_line = getspnam(argv[1]);
+	
+	crypted_pass = crypt(input_pass,shadow_line->sp_pwdp); // have some bug
+														   //
+	if(strcmp(shadow_line->sp_pwdp,crypted_pass) == 0)
+		puts("Ok ... \n");
+	else
+		puts("Error ...\n");
+	
+
+	exit(EXIT_SUCCESS);
+}
+```
+当我们使用普通用户运行这个程序时，会报段错误，因为普通用户并没有权限读取 `shadow` 文件
+
+
+
 
 
 #### 时间戳
+
+计算机喜欢单纯的数字或大整数，用户喜欢字符串，而程序员喜欢结构体
+
+![alt](./Linux_Kernel.assets/2022-08-06_11-51.png)
+
+`time_t` `char*` `struct tm`
+
+
+
+```c
+time();
+gmtime();
+localtime();
+mktime();
+strftime();
+```
+我们可以使用 `date +"%Y-%m-%d"`  来输出我们想要格式的字符串时间
 
 
 ### 进程环境
 
 
 
+进程环境
+
+main()函数
+进程的终止
+命令行参数的分析
+环境变量
+C程序的存储空间布局
+库
+函数跳转
+资源的获取及控制
+
+
++ **正常终止**
+  + 从main函数返回
+  + 调用exit
+  + 调用_exit或_Exit
+  + 最后一个线程从其启动进程中返回
+  + 最后一个线程调用pthread_exit
++ **异常终止**
+  + 调用abort
+  + 接到一个信号并终止
+  + 最后一个线程对其取消请求作出的响应
+
+atexit() 钩子函数
+
+
++ `exit();` 函数会将钩子函数,IO流数据刷新,等操作
++ `_exit();` 函数并不会进行同步数据，运行钩子函数等操作,而是直接进入内核退出程序
+
+
+出现了我们非预期的错误，为反正错误的进一步扩大，我们需要调用 `_exit();` 函数 
+
+<div align='center'>
+  <img src='./Linux_Kernel.assets/2022-08-06_13-48.png' width='u0%' styles='text-align:center;'>
+</div>
+
+请写一个函数，完成接受两个无符号32位整形数，并返回其中较大的那个（不许使用关系和判断）
+
+
+### 命令行参数分析
+
++ `getopt()`
++ `getopt_long()`
+
+
+```c
+u_int32_t max(const u_int32_t lhs,const u_int32_t rhs){
+	int a = lhs;
+	int b = rhs;
+	int64_t tmp_reg = a - b; 
+	printf("%ld\n",tmp_reg);
+	u_int64_t symbol_flag = tmp_reg >> 63 & 1;
+	u_int32_t res = symbol_flag & 1;
+	printf("%d\n",res);
+	return !res * lhs + res * rhs;
+}
+```
+
+```c
+u_int32_t max(const u_int32_t lhs,const u_int32_t rhs){
+	int a = lhs;
+	int b = rhs;
+	int64_t tmp_reg = a - b; 
+	printf("%ld\n",tmp_reg);
+	u_int64_t symbol_flag = tmp_reg >> 63 & 1;
+	u_int32_t res = symbol_flag & 1;
+	printf("%d\n",res);
+	return !res * lhs + res * rhs;
+}
+
+```
+请写一个函数判断无符号32位数中二进制形式中有几个1
+
+getrlimit setrlimit
+
+进程基本知识
+
+进程标识符 pid 类型：传统意义来讲为有符号16位的整形数 pid_t 现在其类型在不同机器上已不具有确定性了 进程号是顺次向下使用，而不是优先使用最小的
+
+getpid 获取当前进程的进程号
+
+getppid 获取当前进程父进程的进程号
+
+ps -ax -L
+
+ps axf
+
+ps axm 进程的产生 fork(); 注意关键字：duplicating 意味着拷贝，克隆，一模一样等含义
+
+fork后父子进程的区别：fork的返回值不一样，pid不同，ppid也不同 未决信号和文件锁不继承，资源利用量清零
+
+init进程 1号 是所有进程的祖先进程 vfork();
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+int main(int argc, char *argv[])
+{
+	pid_t pid;
+	printf("Begin...\n");
+	fflush(NULL); // All streams must be flushed before fork!
+	pid = fork();
+	if(pid < 0 ){
+		perror("fork()");
+		exit(1);
+	}
+	else{
+		if (pid == 0) { // child
+			printf("[%d] -- The child is working\n",getpid());
+		}
+		else{          // parent 
+		//	sleep(1); If we do this, the child process will execute first
+			printf("[%d] -- The parent is working\n",getpid());
+		}
+
+	}	
+	printf("End...\n");
+	exit(0);
+}
+```
+
+```c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+int main(int argc, char *argv[])
+{
+	pid_t pid;
+	printf("Begin...\n");
+	fflush(NULL); // All streams must be flushed before fork!
+	pid = fork();
+	if(pid < 0 ){
+		perror("fork()");
+		exit(1);
+	}
+	else{
+		if (pid == 0) { // child
+			printf("[%d] -- The child is working\n",getpid());
+		}
+		else{          // parent 
+		//	sleep(1); If we do this, the child process will execute first
+			printf("[%d] -- The parent is working\n",getpid());
+		}
+
+	}	
+	printf("End...\n");
+	exit(0);
+}
+```
+
+在fork之前一定要记得刷新缓冲区,否则被fork的子进程将复制缓冲区的内容。
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#define LEFT   30000000
+#define RIGHT  30000200 
+
+
+int main()
+{
+	int i;
+	int isprimer;
+
+	for (i = LEFT; i <= RIGHT; i++)
+	{
+		isprimer= 1;
+		for(int j=2; j<i/2; j++)
+		{
+			
+			if(i % j == 0)
+			{
+				isprimer = 0;
+				break;
+			}
+
+		}
+		
+		if(isprimer)
+			printf("[%d] is primer!\n",i);
+		
+	}
+
+	exit(0);
+
+}
+```
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#define LEFT   30000000
+#define RIGHT  30000200 
+
+int main()
+{
+	int i;
+	int isprimer;
+
+	for (i = LEFT; i <= RIGHT; i++)
+	{
+		isprimer= 1;
+		for(int j=2; j<i/2; j++)
+		{
+			
+			if(i % j == 0)
+			{
+				isprimer = 0;
+				break;
+			}
+
+		}
+		
+		if(isprimer)
+			printf("[%d] is primer!\n",i);
+		
+	}
+
+	exit(0);
+
+}
+```
+
+```c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#define LEFT   30000000
+#define RIGHT  30000200 
+
+
+int main()
+{
+	int i;
+	int isprimer;
+	pid_t pid;
+
+	for (i = LEFT; i <= RIGHT; i++)
+	{
+		fflush(NULL);
+		pid = fork();
+
+		if (pid < 0) {
+			perror("fork()");
+			exit(1);
+		}
+		if(pid == 0){
+			isprimer= 1;
+			for(int j=2; j<i/2; j++){
+				if(i % j == 0){
+					isprimer = 0;
+					break;
+				}
+			}
+			if(isprimer)
+				printf("[%d] is primer!\n",i);
+			exit(0);
+		}
+				
+	}
+
+	exit(0);
+
+}
+
+```
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#define LEFT   30000000
+#define RIGHT  30000200 
+
+
+int main()
+{
+	int i;
+	int isprimer;
+	pid_t pid;
+
+	for (i = LEFT; i <= RIGHT; i++)
+	{
+		fflush(NULL);
+		pid = fork();
+
+		if (pid < 0) {
+			perror("fork()");
+			exit(1);
+		}
+		if(pid == 0){
+			isprimer= 1;
+			for(int j=2; j<i/2; j++){
+				if(i % j == 0){
+					isprimer = 0;
+					break;
+				}
+			}
+			if(isprimer)
+				printf("[%d] is primer!\n",i);
+			exit(0);
+		}
+				
+	}
+
+	exit(0);
+
+}
+```
+父子进程是由调度器的调度策略来决定哪个进程先运行。 进程的消亡及释放资源 exec 函数族
+
+可重入函数：
