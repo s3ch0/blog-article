@@ -883,100 +883,123 @@ ls --color | less
 ```
 
 ### 代码导读
+
 NEMU 代码导读
-浏览源代码
-启动代码选讲
-编辑器配置
++ 浏览源代码
++ 启动代码选讲
++ 编辑器配置
 
-拿到源代码，先做什么？
+**当我们拿到一个项目的源代码，我们应该先做什么？**
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
 NEMU 对大部分同学来说是一个 “前所未有大” 的 project。
+</div>
 
-先大致了解一下
+我们可以先大致了解一下
 
-项目总体组织
-tree 要翻好几个屏幕
-find . -name "*.c" -o -name "*.h" (110+ 个文件)
-项目规模
-find ... | xargs cat | wc -l
-5,000+ 行 (其实很小了)
-C 语言代码，都是从 main() 开始运行的。那么哪里才有 main 呢？
++ 项目总体组织
+  + `tree` 要翻好几个屏幕
+  + `find . -name "*.c" -o -name "*.h"` ( 110+ 个文件 )
++ 项目规模
+  + `find ... | xargs cat | wc -l` ( 计算文件有多少行 )
+  + 5,000+ 行 (其实很小了)
 
-浏览代码：发现 main.c，估计在里面
-使用 IDE (vscode: Edit → Find in files)
+**尝试阅读代码**
+
+> C 语言代码，都是从 main() 开始运行的。那么哪里才有 main 呢？
+
++ 浏览代码：发现 main.c，估计在里面
++ 使用 IDE (vscode: Edit → Find in files)
+
 The UNIX Way (无须启动任何程序，直接查看)
-
+```bash
 grep -n main $(find . -name "*.c") # RTFM: -n
 find . | xargs grep --color -nse '\<main\>'
+```
+
 Vim 当然也支持
-
+```vim
 :vimgrep /\<main\>/ **/*.c
-浏览 :cn, :cp, ...
+```
++ 浏览 :cn, :cp, ...
 
-main()
-比想象中短很多……
+#### 入口函数讲解
 
+**main()函数**
+> 比想象中短很多……
+
+```c
 int main(int argc, char *argv[]) {
   init_monitor(argc, argv);
   engine_start();
   return is_exit_status_bad();
 }
+```
 Comments
++ 把 argc, argv 传递给另一个函数是 C 的 idiomatic use
++ init_monitor 代码在哪里？
+  + 每次都 grep 效率太低
+  + 需要更先进的工具 (稍候介绍)
 
-把 argc, argv 传递给另一个函数是 C 的 idiomatic use
-init_monitor 代码在哪里？
-每次都 grep 效率太低
-需要更先进的工具 (稍候介绍)
+**`parse_args()`**
 
+> 这个函数的名字起的很好，看了就知道要做什么
 
-parse_args()
-这个函数的名字起的很好，看了就知道要做什么
++ 满足好代码不言自明的特性
+  + 的确是用来解析命令行参数的，-b, -l, ...
+  + 使用了 getopt → RTFM!
 
-满足好代码不言自明的特性
-的确是用来解析命令行参数的，-b, -l, ...
-使用了 getopt → RTFM!
-失败的尝试：man getopt → getopt (1)
+失败的尝试：`man getopt → getopt (1)`
 
 成功的尝试
 
-捷径版：STFW “C getopt” → 网页/博客/...
-专业版：man -k getopt → man 3 getopt
-意外之喜：man 还送了个例子！跟 parse_args 的用法一样耶
++ 捷径版：`STFW “C getopt”` → 网页/博客/...
++ 专业版：`man -k getopt → man 3 getopt`
 
-NEMU: 一个命令行工具
+意外之喜：man 还送了个例子！跟 `parse_args` 的用法一样耶
+
+**NEMU: 一个命令行工具**
 The friendly source code
++ 命令行可以控制 NEMU 的行为
++ 我们甚至看到了 --help 帮助信息
 
-命令行可以控制 NEMU 的行为
-我们甚至看到了 --help 帮助信息
 如何让我们的 NEMU 打印它？
++ 问题等同于：make run 到底做了什么
+  + 方法 1: 阅读 Makefile
+  + 方法 2: 借助 GNU Make 的 -n 选项
 
-问题等同于：make run 到底做了什么
-方法 1: 阅读 Makefile
-方法 2: 借助 GNU Make 的 -n 选项
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
 开始痛苦的代码阅读之旅：坚持！
+</div>
 
-static inline
+`static inline`
+
 ```c
 static inline void parse_args(int argc, char *argv[]) { ... }
 ```
-parse_args 函数是 static, inline 的，这是什么意思？
+`parse_args` 函数是 `static, inline` 的，这是什么意思？
 
-inline (C99 6.7.4 #5): Making a function an inline function suggests that calls to the function be as fast as possible. The extent to which such suggestions are effective is implementation-defined. (inline更多有趣的行为请大家RTFM)
-static (C99 6.2.2 #3): If the declaration of a file scope identifier for an object or a function contains the storage- class specifier static, the identifier has internal linkage.
++ inline (C99 6.7.4 #5): Making a function an inline function suggests that calls to the function be as fast as possible. The extent to which such suggestions are effective is implementation-defined. (inline更多有趣的行为请大家RTFM)
++ static (C99 6.2.2 #3): If the declaration of a file scope identifier for an object or a function contains the storage- class specifier static, the identifier has internal linkage.
+
 联合使用
++ 告诉编译器符号不要泄露到文件 (translation unit) 之外
 
-告诉编译器符号不要泄露到文件 (translation unit) 之外
+我们都知道，如果在两个文件里定义了重名的函数，能够分别编译，但链接会出错：
 
-0): multiple definition of f; a.c:(.text+0xb): first defined here
+```c
+/* a.c */ int f() { return 0; }
+/* b.c */ int f() { return 1; }
+```
+> 0): multiple definition of f; a.c:(.text+0xb): first defined here
 
 这也是为什么不在头文件里定义函数的原因
-
-两个 translation unit 同时引用，就导致 multiple definition
-思考题：为什么 C++ 能把 class 都定义到头文件里？？？像 vector 的实现就是直接粘贴进去的
++ 两个 translation unit 同时引用，就导致 multiple definition
++ 思考题：为什么 C++ 能把 class 都定义到头文件里？？？像 vector 的实现就是直接粘贴进去的
 
 
 更多关于 static inline (2)
 
-如果你的程序较短且性能攸关，则可以使用 static inline 函数定义在头文件中。例子 (**/x86/**/reg.h)：
+如果你的程序较短且性能攸关，则可以使用 static inline 函数定义在头文件中。例子 `(**/x86/**/reg.h)`：
 
 ```c
 static inline int check_reg_index(int index) {
@@ -988,8 +1011,8 @@ static inline int check_reg_index(int index) {
 ```c
 int check_reg_index(int index);
 ```
-但这样会导致在编译时，编译出一条额外的 call 指令 (假设没有 LTO)
-使用 `inline` 可以在调用 `check_reg_index(0)` 编译优化成零开销
++ 但这样会导致在编译时，编译出一条额外的 call 指令 (假设没有 [LTO](https://gcc.gnu.org/wiki/LinkTimeOptimization))
++ 使用 `inline` 可以在调用 `check_reg_index(0)` 编译优化成 <font color='red' face=Monaco size=3>零开销</font> 
 
 新的问题：啥是 assert？
 ```c
@@ -1010,13 +1033,12 @@ else ...
       exit(1); \
     } \
   } while (0)
-```
 
-```c
 #define assert(cond) ({ ... })
 ```
 
 千辛万苦……
+
 之后的历程似乎就比较轻松了。有些东西不太明白(比如 `init_device()`)，但好像也不是很要紧，到了 `welcome()`：
 ```c
 static inline void welcome() {
@@ -1026,59 +1048,82 @@ static inline void welcome() {
 }
 ```
 哇，还能顺带打印出编译的时间日期，奇怪的知识又增加了！
-
-初始化终于完成
-啊……根本没碰到核心代码
++ 初始化终于完成
++ 啊……根本没碰到核心代码
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+“我决定挑战自己，坚持在命令行中工作、使用 Vim 编辑代码。但在巨多的文件之间切换真是一言难尽。”
+</div>
 
 上手以后还在用 grep 找代码？
 
-你刚拿到项目的时候，grep 的确不错
-但如果你要一学期在这个项目上，效率就太低了
-曾经有无数的同学选择容忍这种低效率
++ 你刚拿到项目的时候，grep 的确不错
++ 但如果你要一学期在这个项目上，效率就太低了
+  + <font color='red' face=Monaco size=3> 曾经有无数的同学选择容忍这种低效率</font>
 
-Vim: 这都搞不定还引发什么编辑器圣战
-Marks (文件内标记)
+**Vim: <font color='darkcyan' face=Monaco size=3>这都搞不定还引发什么编辑器圣战</font>**
 
-ma, 'a, mA, 'A, ...
-Tags (在位置之间跳转)
+`Marks` (文件内标记)
++ ma, 'a, mA, 'A, ...
 
-:jumps, C-], C-i, C-o, :tjump, ...
-Tabs/Windows (管理多文件)
+`Tags` (在位置之间跳转)
++ `:jumps, C-], C-i, C-o, :tjump, ...`
++ `ctags` `ctags --recurse`
 
-:tabnew, gt, gT, ...
-Folding (浏览大代码)
+`Tabs/Windows` (管理多文件)
++ `:tabnew, gt, gT, ...`
 
-zc, zo, zR, ...
+`Folding` (浏览大代码)
++ `zc, zo, zR, ...`
+
 更多的功能/插件
++ (RTFM, STFW)
 
-(RTFM, STFW)
+#### VSCode
+**VSCode: 现代工具来一套？**
 
-
-VSCode: 现代工具来一套？
 刚拿到手，VSCode 的体验并不是非常好
-满屏的红线/蓝线 因为 Code 并知道 NEMU 是怎么编译的
++ 满屏的红线/蓝线
+  +  因为 Code 并知道 NEMU 是怎么编译的
+  + IDE “编译运行” 背后没有魔法
++ 另一方面，这些东西一定是可以配置的
+  + 配置解析选项: `c_cpp_properties.json`
+    + 解锁正确的代码解析
++ 配置构建选项: `tasks.json`
+  + 解锁 make (可跟命令行参数)
++ 配置运行选项: `launch.json`
+  + 解锁单步调试 (我们并不非常推荐单步调试)
 
-IDE “编译运行” 背后没有魔法
-另一方面，这些东西一定是可以配置的
-配置解析选项: c_cpp_properties.json
-解锁正确的代码解析
-配置构建选项: tasks.json
-解锁 make (可跟命令行参数)
-配置运行选项: launch.json
-解锁单步调试 (我们并不非常推荐单步调试)
+**一个大的项目配置 `c_cpp_properties.json` 比较困难？**
++ 我们有工具帮我们生成这个文件
+  + `bear` `bear -- make`
+  + `compiledb` `compiledb make`
+<div align='center'>
+  <img src='./foundation.assets/2022-08-11_21-49.png' width='80%' styles='text-align:center;'>
+</div>
+
+
+
+<font color='red' face=Monaco size=3>当我们配置好这个文件之后，我们再用vscode打开这个项目时，并不再出现满屏红线和报错了 ：）</font>
+
+<div align='center'>
+  <img src='./foundation.assets/2022-08-11_21-47.png' width='80%' styles='text-align:center;'>
+</div>
+
+
+
 插入福利：调试 Segmentation Fault
 听说你的程序又 Segmentation Fault 了？
 
-百度 Segmentation Fault 得到的首个回答的解释是完全错误的
-正确的解释
-指令越权访问内存 (r/w/x)
-原因很多，数组越界、memory corruption, ...
-指令未被执行，进程收到 SIGSEGV 信号
-默认的信号处理程序会 core dump 退出
++ ~~百度 Segmentation Fault 得到的首个回答的解释是完全错误的~~
++ 正确的解释
+  + 指令越权访问内存 (r/w/x)
+    + 原因很多，数组越界、memory corruption, ...
++ 指令未被执行，进程收到 SIGSEGV 信号
+  + 默认的信号处理程序会 core dump 退出
 
-好的编辑器：也许不是万能的
+> 好的编辑器：也许不是万能的
 
-exec.c 也太难读了吧 ~~(元编程，害死人)~~
+`exec.c` 也太难读了吧 ~~(元编程，害死人)~~
 
 ```c
 static inline def_EHelper(gp1) { // ???
@@ -1091,13 +1136,15 @@ static inline def_EHelper(gp1) { // ???
 ```
 
 产生 “这是什么操作” 的困惑：
-办法 1: RTFM + RTFSC + 写小程序尝试
-办法 2: 预编译以后的代码应该好理解！
-还记得我们对 Makefile 的导读吗？
-(说的容易做得难。直接 gcc -E 不是编译错误吗……)
++ 办法 1: RTFM + RTFSC + 写小程序尝试
++ 办法 2: 预编译以后的代码应该好理解！
+  + 还记得我们对 Makefile 的导读吗？
+    + (说的容易做得难。直接 gcc -E 不是编译错误吗……)
+
 我们既然知道 Makefile 里哪一行是 .o → .c 的转换
 
-我们添一个一模一样的 gcc -E 是不是就行了？
+ <font color='red' face=Monaco size=3>我们添一个一模一样的 gcc -E 是不是就行了？</font> 
+
 ```make
 $(OBJ_DIR)/%.o: src/%.c
     @$(CC) $(CFLAGS) $(SO_CFLAGS) -c -o $@ $<
@@ -1105,70 +1152,77 @@ $(OBJ_DIR)/%.o: src/%.c
       grep -ve '^#' | \
       clang-format - > $(basename $@).i
 ```
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+ 敲黑板：征服你畏惧的东西，就会有意想不到的收获。
+</div>
 
-> 敲黑板：征服你畏惧的东西，就会有意想不到的收获。
-
-总结
-怎样读代码？
-
+总结<br>
+怎样读代码？<br>
 读代码 ≠ “读” 代码
++ 用正确的工具，使自己感到舒适
++ 但这个过程本身可能是不太舒适的 (走出你的舒适区)
+  + 我们看到太多的同学，到最后都没有学会使用编辑器/IDE
+    + <font color='red' face=Monaco size=3>要相信一切不爽都有办法解决</font>
 
-用正确的工具，使自己感到舒适
-但这个过程本身可能是不太舒适的 (走出你的舒适区)
-我们看到太多的同学，到最后都没有学会使用编辑器/IDE
-要相信一切不爽都有办法解决
 信息来源
-
-在 /etc/hosts 中屏蔽百度
-去开源社区找 tutorials
-例子：vim-galore, awesome-c
-
-[how debuggers work -- breakpoints](https://eli.thegreenplace.net/2011/01/27/how-debuggers-work-part-2-breakpoints) 
-
++ 在 /etc/hosts 中屏蔽百度
++ 去开源社区找 tutorials
+  + 例子：[vim-galore](https://github.com/mhinz/vim-galore), [awesome-c](https://github.com/oz123/awesome-c) 
+  + [how debuggers work -- breakpoints](https://eli.thegreenplace.net/2011/01/27/how-debuggers-work-part-2-breakpoints) 
 
 
 
 
 
 ## 数据的机器级表示
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+我们已经知道数据是如何在计算机中表示的。但为什么要这样表示？这样的表示有什么好处和用法？
+</div>
++ 位运算与单指令多数据
++ 整数溢出与 Undefined Behavior
++ IEEE754 浮点数
 
-位运算与单指令多数据
-为什么会有位运算？
-逻辑门和导线是构成计算机 (组合逻辑电路) 的基本单元
+### 位运算与单指令多数据
+**为什么会有位运算？**
 
-位运算是用电路最容易实现的运算
-`&` (与), `|` (或), `~` (非)
-`^` (异或)
-`<<` (左移位), `>>` (右移位)
-例子：一代传奇处理器 8-bit [Mos 6502](https://www.masswerk.at/6502/6502_instruction_set.html) 
-3510 晶体管；56 条指令，算数指令仅有加减法和位运算
-数学上自然的整数需要实现成固定长度的 01 字符串
+ <font color='red' face=Monaco size=3>逻辑门和导线是构成计算机 (组合逻辑电路) 的基本单元</font> 
+
++ 位运算是用电路最容易实现的运算
++ `&` (与), `|` (或), `~` (非)
++ `^` (异或)
++ `<<` (左移位), `>>` (右移位)
++ 例子：一代传奇处理器 8-bit  [Mos 6502](https://www.masswerk.at/6502/6502_instruction_set.html) 
+  + 3510 晶体管；56 条指令，算数指令仅有加减法和位运算
++ 数学上自然的整数需要实现成固定长度的 01 字符串
 
 习题：用上述位运算和常数实现 4 位整数的加法运算/Lab1
 
-加法比上述运算在电路上实现 fundamentally 更困难 (为什么？)
-“Circuit Complexity”
++ 加法比上述运算在电路上实现 fundamentally 更困难 (为什么？)
+  + “Circuit Complexity”
 
+```text
+5 -> 0101
+```
+如果我们想取第二位的内容， 我们可以先将其右移一 `0101 >> 1` 我们就得到了 `0010` 然后我们在与上 1 `0010 & 0001` 因为任何数和 0 相与都为 0
+
+
+整数：固定长度的 `Bit String`
 ```text
 142857 -> 0000 0000 0000 0010 0010 1110 0000 1001
 ```
++ 假设 32-bit 整数；约定 MSB 在左，LSB 在右
 
-假设 32-bit 整数；约定 MSB 在左，LSB 在右
 热身问题：字符串操作
++ 分别取出 4 个字节
++ 交换高/低 16 位
 
-分别取出 4 个字节
-交换高/低 16 位
-
-&, |, ~, ... 对于整数里的每一个 bit 来说是独立 (并行) 的
+<font color='red' face=Monaco size=3>`&, |, ~, ...` 对于整数里的每一个 bit 来说是独立 (并行) 的</font> 
 
 如果我们操作的对象刚好每一个 bit 是独立的
++ 我们在一条指令里就实现了多个操作
++ SIMD (Single Instruction, Multiple Data)
 
-
-我们在一条指令里就实现了多个操作
-SIMD (Single Instruction, Multiple Data)
-例子：Bit Set 
-
-
+例子：Bit Set               
 32-bit 整数 $\color{darkcyan}x \rightarrow S \subseteq \{0,1,2,3,\cdots 31\}$
 + 位运算是对所有 bit 同时完成的
   + C++ 中有 bitset，性能非常可观

@@ -933,6 +933,10 @@ atexit() 钩子函数
 + `getopt_long()`
 
 
+### 环境变量
+
+
+
 ```c
 u_int32_t max(const u_int32_t lhs,const u_int32_t rhs){
 	int a = lhs;
@@ -959,6 +963,9 @@ u_int32_t max(const u_int32_t lhs,const u_int32_t rhs){
 }
 
 ```
+
+
+
 请写一个函数判断无符号32位数中二进制形式中有几个1
 
 getrlimit setrlimit

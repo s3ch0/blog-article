@@ -456,6 +456,21 @@ XferCommand = /usr/bin/axel -o %o %u
 
 安装一些有用的包
 
+在安装软件时我们可以选择三种安装方式
+1. 如果是比较主流的软件或者依赖可以在官方库里下载
+	+ `sudo pacman -S vim`
+2. 如果在官方库里没有,可以尝试在 `AUR` 寻找一下
+	+ `yay -S google-chrome`
+3. 如果在命令行里没有找到该软件，但是在 `Arch Wiki` 里查找到了对应的软件构造文件 ( 如`visual-studio-code-bin` )
+	+ 我们可以先把这个压缩包下载下来
+	+ 然后进行解压 
+	+ 进行安装 `makepkg -si` 
+
+查看安装了哪些包
+
+```bash
+sudo pacman -Q # -Q : query
+```
 
 
 ```bash
