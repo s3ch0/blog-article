@@ -5,6 +5,7 @@
 + [视频链接](https://space.bilibili.com/202224425/video)
 + [课件链接](http://jyywiki.cn/OS/2022/)
 + [阅读材料链接](http://jyywiki.cn/OS/OS_References)
++ [教材下载链接](./OS.assets/operating_systems_three_easy_pieces.pdf)
 
 ## 操作系统概述
 > 阅读材料链接
