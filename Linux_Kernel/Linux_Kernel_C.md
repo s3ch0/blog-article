@@ -936,6 +936,55 @@ atexit() 钩子函数
 ### 环境变量
 
 
++ `getenv`
++ `setenv`
++ `putenv`
+
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+我们知道 setenv 有覆盖的选项，如果原始串大小很小，而新覆盖的字符串很长，会不会发生溢出现象?
+</div>
+
+<font color='red' face=Monaco size=3>其实 setenv 这个函数会先将原来存放环境的那块空间给释放掉，然后再堆上重新申请空间，将新的环境变量的内容填充进去</font>
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+extern char **environ;
+
+
+int main(){
+	int i;
+	for(i=0;environ[i] != NULL; i++)
+		puts(environ[i]);
+
+}
+
+```
+
+### C程序的存储空间布局
+
+一个 32 位程序它的虚拟存储空间有 4G
+
+```bash
+pmap
+```
+### 库
+
++ 动态库
++ 静态库
++ 手工装载库
+
+`dlopen`
+`dlclose`
+`dlsym`
+`dlerror`
+
+```c
+
+### 函数跳转
+
+setjump
+longjump
 
 ```c
 u_int32_t max(const u_int32_t lhs,const u_int32_t rhs){

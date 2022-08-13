@@ -482,9 +482,8 @@ pattern create 100
 ![](./mechine5.assets/2022-08-12_23-17.png)
 
 我们可以使用 `info func` 来查看这个程序所用到的所有函数
-```gdb
+```bash
 info func
-
 ```
 
 我们通过查看函数，发现了两个对我们渗透测试可能有帮助的函数

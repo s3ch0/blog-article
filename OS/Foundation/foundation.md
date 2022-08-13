@@ -1175,9 +1175,11 @@ $(OBJ_DIR)/%.o: src/%.c
 
 
 ## 数据的机器级表示
+
 <div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
 我们已经知道数据是如何在计算机中表示的。但为什么要这样表示？这样的表示有什么好处和用法？
 </div>
+
 + 位运算与单指令多数据
 + 整数溢出与 Undefined Behavior
 + IEEE754 浮点数
