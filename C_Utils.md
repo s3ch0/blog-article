@@ -53,3 +53,5 @@ I know I can do this:
 [](https://stackoverflow.com/questions/52891546/what-does-va-args-mean)
 
 This is just an example, it's part of a more complicated solution. The point is that I need to append the variable number of arguments to the first 123. **The ## makes the compiler strip out the comma after the 123 argument if no arguments were passed into MACRO.**
+
+you can use `xxd -i logo_file > logo.c` to generate a print logo.c
