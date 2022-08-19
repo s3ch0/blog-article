@@ -418,6 +418,7 @@ grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi 
 
 ![20220420_0136.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/499c153414639f76732950c5561d659d.png)
 
+
 ```bash
 pacman -S neovim vi zsh fish wpa_supplicant dhcpcd
 ```
@@ -496,6 +497,17 @@ useradd -m -G wheel busyvisudo
 sudo pacman -S xorg xorg-server xorg-xinit
 ```
 
+这边假设你使用 `x11` 做为你的环境，或许你有更换鼠标样式，字体样式的需求，但你又不想安装一个比较大的桌面环境(`gnome` `KDE` ... ) 你使用的是类似 `dwm` 的窗口管理器，那么你可以安装以下工具来更换 `x11` 环境下的字体、鼠标，图标等样式。
+
+```bash
+sudo pacman -S xcursor-themes lxappearance
+```
+
+当然我们可以先安装我们自己喜欢的主题样式。如果你喜欢 `kde plasma` 内的某个主题的话，你可以在 [kde plasma store](https://store.kde.org/browse?cat=104) 里下载你喜欢的样式主题。
+
+然后我们运行 `lxappearance` 选择我们喜欢的样式即可
+
+![](./打造属于自己的Arch.assets/2022-08-19_14-37.png)
 
 
 
