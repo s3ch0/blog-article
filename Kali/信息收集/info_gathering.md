@@ -201,4 +201,117 @@ arping 发送 ARP 探测包
 <font color='red' face=Monaco size=3>我们可以自己写一个威胁分析的软件，并且可以尝试扩展定制添加国内资源</font>
 
 ## SNMP 信息收集
+
+**SNMP 协议**
+
+> ***Simple Network Management Protocol (SNMP).***
+
++ 监控目标设备
+  + 操作系统，硬件设备，服务应用
+  + <font color='red' face=Monaco size=3>UDP 161 端口 ( Agent open )</font> 
+  + 软硬件配置
+  + 网络协议状态
+  + 设备性能及资源利用率
+  + 设备报错事件信息
+  + 应用程序状态
++ `Manager / Agent`
+  + 管理端 / 客户端
+
+**Agent**
++ MIB - 管理信息库
+  + 管理对象集合的树形结构数据库
+  + 每个管理对象对应一个 OID
+    + `.iso.org.dod.internet.mgmt.mib-2.interfaces.ifTable.ifEntry.ifOperStatus`
+    + `.1.3.6.1.2.1.2.2.1.8` <font color='red' face=Monaco size=3>这种方式更常见</font>
++ Public / Private 分支
+  + IETF / 企业
+
+![alt](./info_gathering.assets/Snipaste_2022-08-19_16-15-40.png)
+
+**权限**
++ 只读 / 读写
+  + `Community` 相当于密码
+  + `public / private` 默认值
++ 安全问题
+  + 只读权限泄露导致信息泄露
+  + 读写权限泄露导致服务器配置被篡改
+
 ### braa
+
++ SNMP 服务扫描工具
++ 不基于已有库和模块，全新重构了 SNMP 协议栈的实现
+  + 舍弃规范 SNMP 通信确认机制，为快速而生
+  + 单进程并发扫描多目标，资源消耗小
++ 只支持直接使用 OID 进行探测
+
+
+`braa community@IP:Port:OID`
+
+```bash
+# 修改联系人为kali
+braa public@192.168.31.215:161:.1.3.6.1.2.1.1.4.0
+```
+
+```bash
+.1.3.6.1.2.1.25.4.2.1.2.*    # 进程列表
+.1.3.6.1.2.1.1.6.0           # 物理位置
+.1.3.6.1.2.1.25.1.1.*        # 开机时长
+.1.3.6.1.4.1.77.1.2.25.1.*   # 所有用户
+.1.3.6.1.4.1.777.1.4.1.0     # 工作组/域名
+.1.3.6.1.2.1.2.2.1.*         # 网卡信息
+.1.3.6.1.2.1.25.2.*          # 硬盘信息
+.1.3.6.1.2.1.1.1.0           # 系统基本信息
+.1.3.6.1.2.1.1.4.0           # 联系人
+.1.3.6.1.2.1.1.5.0           # 主机名
+.1.3.6.1.2.1.25.6.3.1.*      # 软件列表
+```
+```bash
+# 修改联系人为kali
+braa private@192.168.31.215:161:.1.3.6.1.2.1.1.4.0=kali
+```
+
+## 思科信息收集类工具
+**CDP 协议**
+> ***Cisco Discovery Protocol (CDP)***
++ 思科私有二层协议，用于发现直连设备
++ 通过二层协议描绘网络拓扑
++ 避免三层协议配置错误导致的问题
++ HP: LLDP协议, 华为: NDP协议
++ 版本:v1,v2
+
+---
+
++ 工作原理
+  + 每分钟发一个通告
+  + 包中含默认TTL值 -- 180秒
+  + 目标地址 `01-00-0c-cc-cc-cc`
++ 适用于以太网，帧中继，ATM网络
+
+思科设备常用命令
+```bash
+show cdp neighbor
+show cdp neighbor detail
+show cdp traffic
+show cdp entry
+show cdp interface
+cdp run  # 全局启动 cdp
+cdp enable # 接口模式下启动 cdp
+```
+
+
+### `cdpsnarf`
+
+
+
+## 情报分析
+### casefile
++ 离线绘制关系图
+  + IT 安全事件
+  + 行政执法
++ OSINT / HUMINT
+  + 图形展现工具
+  + 信息片段关联
+  + 生成信息地图
+  + 事件调查 、 案件分析
++ 简化版的 Maltego ( 没有 transforms )
+

@@ -415,6 +415,15 @@ grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi 
 
 ## 安装自己喜欢的软件
 
+一个比较好的终端软件 **tabby**
+
+```bash
+yay -S tabby
+# or goto github download .pacman package then run follow command
+sudo pacman -U package_name
+```
+
+
 
 ![20220420_0136.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/499c153414639f76732950c5561d659d.png)
 
@@ -610,3 +619,21 @@ makepkg -s
 sudo pacman -U visual-studio-code-bin-*.pkg.tar.xz
 ```
 
+Rollback Only Specific Packages
+There are a couple of ways to do this. If you're rolling back to a version you previously had installed, you will have the older package in your own local pacman cache at /var/cache/pacman/pkg, and you can install that one directly:
+
+```bash
+# go to the pacman cache directory
+cd /var/cache/pacman/pkg
+ 
+# find the package you want
+ls *wine*
+ 
+# attempt to install it
+sudo pacman -U wine-3.4-2-x86_64.pkg.tar.xz
+```
+
+Alternatively, if you want to install a specific package version that you didn't previously have, you can access it from the Arch archives:
+```bash
+sudo pacman -U https://archive.archlinux.org/packages/.all/wine-3.4-2-x86_64.pkg.tar.xz
+```
