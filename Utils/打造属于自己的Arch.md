@@ -579,7 +579,9 @@ sudo vim /etc/bluetooth/main.conf
 
 
 
-
+```bash
+sudo pacman -S mousepad
+```
 
 
 
