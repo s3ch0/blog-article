@@ -2,6 +2,8 @@
 
 ![080317_bug.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/8de959d522b108e54e0acf6a39e57dab.png)
 
++ [看雪](https://bbs.pediy.com/)
++ [吾爱破解](https://www.52pojie.cn/)
 
 ## 基础知识
 
@@ -23,7 +25,7 @@
 
 3. windows下恶意代码的常见类型和危害
 
-常见的恶意代码类型:
+### 常见的恶意代码类型:
 
 #### 木马
 + **木马特点:**
@@ -125,9 +127,6 @@ LoadLibrary
 
 
 空格
-
-
-
 
 
 ![Snipaste_20220416_151432.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/08db2843454c0bcbaf51ad67699fccb3.png)

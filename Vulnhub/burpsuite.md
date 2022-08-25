@@ -1,4 +1,8 @@
 ## 安装 `Burpsuite` 专业版
+<div align='center'>
+  <img src='./burpsuite.assets/download.png' width='60%' styles='text-align:center;'>
+</div>
+
 > Kali 下安装 `Burpsuite` 专业版
 + [视频演示](https://www.youtube.com/watch?v=mc1u5PfuKB4)
 

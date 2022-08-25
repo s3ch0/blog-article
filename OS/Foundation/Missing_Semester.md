@@ -17,18 +17,7 @@ echo 500 | sudo tee /sys/class/backlight/intel_backlight/brightness
 
 ![](./Missing_Semester.assets/2022-08-03_13-01.png)
 
-+ [X] **HomeWork**
-
-<span style='color:blue'>
-</span>
-<details>
-  <summary style='color:darkcyan'>
-  Detail 
-  </summary>
-  <p style='color:darkcyan'>
-	Write a command that reads out your laptop battery’s power level or your desktop machine’s CPU temperature from /sys
-  </p>
-</details>
+---
 
 查看电脑的电量剩余
 ```bash
@@ -65,7 +54,7 @@ echo 'Hello World' # 单引号
 双引号定义的字符串里面可以包含变量
 而单引号则不行
 
-![](./foundation.assets/2022-07-05_00-02.png)
+![](./Missing_Semester.assets/2022-07-05_00-02.png)
 
 + `$0` : 代表当前脚本的名字
 + `$1` `$2` `$3` `...` `$n` : 代表第n个参数
@@ -89,7 +78,7 @@ mcd () {
 ```
 
 <font color="red" face=Monaco size=3> 我们在终端里输入 `!!` 后按一下tab 键会将上一条命令替换掉 `!!`  </font>
-![](./foundation.assets/2022-07-05_00-25.png)
+![](./Missing_Semester.assets/2022-07-05_00-25.png)
 
 我们还可以将命令的结果赋值给变量
 ```bash
@@ -144,13 +133,13 @@ project2/src/test/test2.py project2/src/test/test3.py
 ```bash
 touch {foo,bar}/{a..j}
 ```
-![](./foundation.assets/2022-07-05_01-29.png)
+![](./Missing_Semester.assets/2022-07-05_01-29.png)
 
 
 ```bash
 diff <(ls foo) <(ls bar)
 ```
-![](./foundation.assets/2022-07-05_01-33.png)
+![](./Missing_Semester.assets/2022-07-05_01-33.png)
 
 
 `#!/usr/bin/env python` : 表示在环境变量里面找到 `python` 这个解释器
@@ -216,40 +205,16 @@ curl cheat.sh/command # curl cheat.sh/ffmpeg
 + `nnn`
 
 
+## 编辑器
+
 ## 数据处理 `(Data Wrangling)`
 
-
-
-在使用 SSH 连接服务器时我们经常要使用这种方式
-而重复次数比较多时就会比较麻烦(有时IP地址忘记了)
-![](./foundation.assets/2022-07-06_11-18.png)
-
-我们想使用下面这种方式进行远程主机的连接
-
-```bash
-ssh server
-```
-我们只需要将下面的配置保存到 `~/.ssh/config`
-文件即可
-
-```
-Host server
-Hostname actualServerNameOrIp
-User yourUserName
-```
-不过一下信息你得根据你自己的情况进行相应的更改
-
-+ `server` : 服务名(使用ssh连接时想用的名字)
-+ `actualServerNameOrIp` : 真实的服务器名称或者其 IP 地址
-+ `yourUserName`: 想要以什么用户去连接该服务器如 `root`
-
-[SSH Essentials:Working with SSH Servers Clients and Keys](https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh-servers-clients-and-keys) 
 
 
 我们可以使用以下方式 **( 使用`''` 引号将要运行的命令包裹起来)** 让命令在远程服务器上运行对应的命令然后返回给我们本地
 
 
-![<++>](./foundation.assets/2022-07-06_11-35.png) 
+![<++>](./Missing_Semester.assets/2022-07-06_11-35.png) 
 
 我们可以使用 `sed` 命令来过滤我们想要的信息
 
@@ -261,9 +226,9 @@ User yourUserName
 ```
 而且默认也和 vim 一样为一行只替换一次但我们在后面添加 `g` `global` 之后就会全部替换 (只要遇见满足条件的字符串就会替换掉)
 
-![](./foundation.assets/2022-07-06_12-35.png)
+![](./Missing_Semester.assets/2022-07-06_12-35.png)
 
-![](./foundation.assets/2022-07-06_12-36.png)
+![](./Missing_Semester.assets/2022-07-06_12-36.png)
 
 我们可以使用 `-E` 来使用扩展正则
 
@@ -278,9 +243,10 @@ echo 'abacabcabbc' | sed -E 's/(ab|bc)*//g'
 
 ```
 `(ab)` 里的 `()` 这个括号将 `ab` 字符变成了一个整体,只有 `ab` 这种形式的才会被替换掉
-![](./foundation.assets/2022-07-06_12-50.png)
 
-![](./foundation.assets/2022-07-06_12-42.png)
+![](./Missing_Semester.assets/2022-07-06_12-50.png)
+
+![](./Missing_Semester.assets/2022-07-06_12-42.png)
 
 ```bash
 cat ./secho_log.log | sed 's/.*Disconnected from//'
@@ -309,6 +275,98 @@ gcc -Wl, --verbose ./Demo.c
 `-n` 打印出所有 make 将运行的命令 `-B` 无条件 make 所有目标
 ```bash
 make -nB
+```
+
+### 别名(alias)
+
+我们可以使用 `alias` 给我们的命令设置别名
+
+![alt](./Missing_Semester.assets/2022-08-25_13-49.png)
+
+**一些有用的别名**
+
+```bash
+alias mv="mv -i" # -i interactive
+alias sl="ls"
+```
+
++ [The best way to store your dotfiles](https://www.atlassian.com/git/tutorials/dotfiles)
++ [Your unofficial guide to dotfiles on GitHub.](https://dotfiles.github.io/)
+
+![alt](./Missing_Semester.assets/Snipaste_2022-08-25_15-22-28.png)
+
+### SSH
+
+在使用 SSH 连接服务器时我们经常要使用这种方式
+而重复次数比较多时就会比较麻烦(有时IP地址忘记了)
+
+![](./Missing_Semester.assets/2022-07-06_11-18.png)
+
+我们想使用下面这种方式进行远程主机的连接
+
+```bash
+ssh server
+```
+我们只需要将下面的配置保存到 `~/.ssh/config`
+文件即可
+
+```
+Host server
+Hostname actualServerNameOrIp
+User yourUserName
+```
+不过一下信息你得根据你自己的情况进行相应的更改
+
++ `server` : 服务名(使用ssh连接时想用的名字)
++ `actualServerNameOrIp` : 真实的服务器名称或者其 IP 地址
++ `yourUserName`: 想要以什么用户去连接该服务器如 `root`
+
+[SSH Essentials:Working with SSH Servers Clients and Keys](https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh-servers-clients-and-keys) 
+
+
+![alt](./Missing_Semester.assets/2022-08-25_14-02.png)
+
+![alt](./Missing_Semester.assets/2022-08-25_14-17.png)
+
+![alt](./Missing_Semester.assets/2022-08-25_14-23.png)
+
+![alt](./Missing_Semester.assets/2022-08-25_15-29.png)
+
+![alt](./Missing_Semester.assets/2022-08-25_15-50.png)
+
+![alt](./Missing_Semester.assets/2022-08-25_15-52.png)
+
+![2022-08-25_20-34.png](./Missing_Semester.assets/2022-08-25_20-34.png)
+![2022-08-25_20-36.png](./Missing_Semester.assets/2022-08-25_20-36.png)
+![2022-08-25_20-37.png](./Missing_Semester.assets/2022-08-25_20-37.png)
+![2022-08-25_20-41.png](./Missing_Semester.assets/2022-08-25_20-41.png)
+![2022-08-25_20-44.png](./Missing_Semester.assets/2022-08-25_20-44.png)
+![2022-08-25_20-45.png](./Missing_Semester.assets/2022-08-25_20-45.png)
+
+```bash
+cat ~/.ssh/id_ed25519.pub | ssh root@192.168.31.50 tee .ssh/authorized_keys
+```
+
+```bash
+ssh-copy-id root@192.168.31.50
+```
+
+```bash
+HOST kali-vm
+	HOSTname 192.168.31.103
+	User zh
+	IdentityFile ~/.ssh/id_ed25519
+	IdentitiesOnly yes # see comment in answer below
+```
+
+```bash
+scp
+scp notes.md root@192.168.31.50:foobar.md
+rsync -avP . root@192.168.31.50:cmd
+sftp
+```
+```bash
+tmux a
 ```
 
 ## Git 版本控制
