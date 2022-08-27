@@ -656,8 +656,9 @@ NEMU 就是加强版的 YEMU
 + [A Visual Git Reference](https://marklodato.github.io/visual-git-guide/index-en.html)
 + [Visualizing Git Concepts with D3](http://onlywei.github.io/explain-git-with-d3/)
 + [Pro Git](https://git-scm.com/book/en/v2)
+
 > The UNIX-Hater's Handbook (and Beyond) 写于 1994 年
-+ Simson Garfinkel 的主页有[电子版](https://web.mit.edu/~simsong/www/ugh.pdf)
++ Simson Garfinkel 的主页有[电子版](https://web.mit.edu/~simsong/www/ugh.pdf) [下载链接](./foundation.assets/ugh.pdf)
     + 说有道理也有道理
     + 说没道理也没道理
 + 至少指出了 UNIX 的一些缺陷 
@@ -665,6 +666,8 @@ NEMU 就是加强版的 YEMU
 	+ 命令行/系统工具的缺陷
 
 **但今天 UNIX/Linux 已经成熟多了！**
+
+[make xargs handle filenames that contain spaces](https://stackoverflow.com/questions/16758525/make-xargs-handle-filenames-that-contain-spaces)
 
 #### Git / GitHub
 
@@ -824,22 +827,16 @@ shell: bash, zsh, ...
 但这将会是一份非常好的研究工作
 
 
-
-
-
-
-
-
 我们可以使用 `x-macros` 来对需要大量大体重复的代码进行替换
 
 `find . -name "*.c" -o -name "*.h" | xargs cat | wc -l`
 
 `find . -name "*.c" | xargs grep --color -nse '\<main\>'`
 
-`-n` 添加行号
-`-s` 不显示因为文件不存在或者文件无法访问出现的错误信息
-`-e` 使用正则表达式
-`<...>` 代表以单词为单位
++ `-n` 添加行号
++ `-s` 不显示因为文件不存在或者文件无法访问出现的错误信息
++ `-e` 使用正则表达式
++ `<...>` 代表我们查找要以单词为单位
 
 `grep -n main $(find . -name "*.c")`
 
@@ -1439,7 +1436,7 @@ James C. King. Symbolic execution and program testing. Communications of the ACM
 ```
 
 
---- 
+---
 
 ## PA 实验
 

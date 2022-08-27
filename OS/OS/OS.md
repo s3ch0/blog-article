@@ -60,8 +60,6 @@ integrate( 1 / (x**3 + x**2 + x))
 </div>
 
 
-
-
 我学《操作系统》的时候 (2009)，大家都说操作系统很难教
 - 使用豆瓣评分高达 5.7/10 的 “全国优秀教材
 	+ 没有正经的实验 (写一些 16-bit code)
@@ -144,10 +142,7 @@ ENIAC 程序是用物理线路 “hard-wire” 的
 <div align="center">
 <div style="border-radius:10px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;width:550px;">
 没有操作系统！
-</div>
-
-</div>
-
+</div></div>
 能把程序放上去就很了不起了!
 + 程序直接用指令操作硬件
 + 不需要画蛇添足的程序来管理它
@@ -199,10 +194,7 @@ C---- THE SUM OF THEM.
 <div align="center">
 <div style="border-radius:10px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;width:550px;">
 管理多个程序依次排队运行的库函数和调度器。
-</div>
-
-</div>
-
+</div></div>
 写程序、跑程序都是非常费事的 (比如你写了个死循环……)
 + 计算机非常贵 ($50,000-$1,000,000)，一个学校只有一台
 + 产生了集中管理计算机的需求： <font color="red" face=Monaco size=3>  多用户排队共享计算机 </font> 
@@ -240,10 +232,7 @@ C---- THE SUM OF THEM.
 <div align="center">
 <div style="border-radius:10px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:10px;padding:15px;width:600px;">
 能载入多个程序到内存且灵活调度它们的管理程序，包括程序可以调用的 API。
-</div>
-
-</div>
-
+</div></div>
 
 <font color="red" face=Monaco size=3> 同时将多个程序载入内存 </font>是一项巨大的能力
 
@@ -277,28 +266,16 @@ PASCAL (1970), C (1972), …
 + 今天能办到的，那个时代已经都能办到了——上天入地、图像声音视频、人工智能……
 + 个人开发者 (Geek Network) 走上舞台
 <div align="center">
-<table>
-
-
-<tr>
+<table><tr>
 	<td><img src="./OS.assets/wordstarvig.jpg" width="450px"></td>
-</tr>
-
-<tr>
+</tr><tr>
 	<td>Wordstar (1979)</td>
-</tr>
-
-</table>
-</div>
-
+</tr></table></div>
 #### 1970s+ 的操作系统
 <div align="center">
 <div style="border-radius:10px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:10px;padding:15px;width:600px;">
 分时系统走向成熟，UNIX 诞生并走向完善，奠定了现代操作系统的形态。
-</div>
-
-</div>
-
+</div></div>
 
 + 1973: 信号 API、管道 (对象)、grep (应用程序)
 + 1983: BSD socket (对象)
@@ -407,16 +384,15 @@ int main() {
 	+ [seven-seg.py](./OS.Demo/seven-seg.py)
 	+ 同样的方式可以模拟任何数字系统
 		+ 当然，也包括计算机系统
-你还体验了 UNIX 哲学
+		你还体验了 UNIX 哲学
 
 <div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px; font-family:"Source Code Pro";font-size:16px'>
  Make each program do one thing well<br>
 Expect the output of every program to become the input to another
 Hmm....
- 
+
   <div style='text-align:right;padding:0 15px;'>
   -- Unix philosophy
-	
   </div>
 </div>
 
@@ -540,10 +516,13 @@ gcc 编译出来的文件不满足 “最小”
 ![alt](./OS.assets/2022-07-30_17-34.png)
 
 这时候我们把 `printf` 给注释掉的话，发现能成功编译并链接，但当我们运行这个编译链接后的程序之后，我们获得了 `Segmentation Fault`
+
 ![alt](./OS.assets/2022-07-30_17-40.png)
 
 当我们在函数体里加一条 `while(1);` 语句再编译链接，发现程序能正常运行！
+
 ![alt](./OS.assets/2022-07-30_17-54.png)
+
 那为什么当 `_start` 函数体为空时会出现错误?
 
 我们可以使用 `gdb` 来观察这个程序究竟做了什么
@@ -697,7 +676,7 @@ $$
 可执行文件
 + <font color='red' face=Monaco size=3>与大家日常使用的文件 (a.c, README.txt) 没有本质区别</font> 
 + 操作系统提供 API 打开、读取、改写 (都需要相应的权限)
- 
+
 查看可执行文件
 + vim, cat, xxd 都可以直接查看可执行文件
 	+ vim 中二进制的部分无法 “阅读”，但可以看到字符串常量
@@ -1065,8 +1044,6 @@ int main() {
 + -O1: 100000000 😱😱
 + -O2: 200000000 😱😱😱
 ![alt](./OS.assets/2022-08-01_00-17.png)
-
-
 
 <font color='red' face=Monaco size=3>顺序的丧失</font> 
 <div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
@@ -1492,10 +1469,7 @@ Model checker 的一切就是状态机！
   <div>
   “躲进厕所锁上门，我就把全世界人锁在了厕所外”
   </div>
-</div>
-
-<br>
-
+</div><br>
 **回顾：互斥算法**
 
 互斥 (mutual exclusion)，“互相排斥”
@@ -1761,12 +1735,8 @@ Scalability: 性能的新维度
 
 <div style="width:40%;display:block;float:right">
   <img src='./OS.assets/spinlock-scalability.jpg' width='100%'>
-</div>
-
-</div>
-<div style="clear:both"></div>
-<br>
-
+</div></div>
+<div style="clear:both"></div><br>
 自旋锁的使用场景
 + 临界区几乎不 “拥堵”
 + 持有自旋锁时禁止执行流切换
