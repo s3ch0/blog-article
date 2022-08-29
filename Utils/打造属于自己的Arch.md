@@ -7,16 +7,15 @@
 ## 准备工作
 
 在安装前,我认为非常有必要将下面的安装文档准备在身边.
++ Arch 官方安装文档 : [Arch WiKi  Installation Guide](https://wiki.archlinux.org/title/Installation_guide)
++ Arch Linux 简明指南 : [Arch Linux 安装指南](https://arch.icekylin.online/)
++ [TheCW 视频讲解&演示](https://www.bilibili.com/video/BV11J411a7Tp?spm_id_from=333.999.0.0) 
 
-Arch 官方安装文档 : [Arch WiKi  Installation Guide](https://wiki.archlinux.org/title/Installation_guide)
-
-Arch Linux 简明指南 : [Arch Linux 安装指南](https://arch.icekylin.online/)
-
+当然你遇到的几乎所有问题都能在 <font color=red>[Arch Wiki](https://wiki.archlinux.org/)</font > 上找到相应的解决方案。
 
 ### 准备镜像
 
 + [官方下载网站](https://archlinux.org/download/)
-
 + [阿里云镜像源](http://mirrors.aliyun.com/archlinux/iso/2022.03.01/)
 
 
@@ -27,67 +26,67 @@ Arch Linux 简明指南 : [Arch Linux 安装指南](https://arch.icekylin.online
 
 + [rufus 下载网站](https://rufus.ie/en/)
 
-这边使用 rufus 进行演示
+我是使用 `rufus` 进行成功烧录，并能正常使用。
+
+<font color='red' face=Monaco size=3>如果使用默认的ISO镜像模式不能正确引导USB驱动器，则应该使用DD镜像模式进行烧录。</font> 
+
+当然你也可以在linux 里自己使用 DD 命令来进行手动烧录镜像.
 
 
+当你烧录完成之后，你还需要设置正确的电脑引导，进入 `BIOS/UEFI` 将 以 以 USB 启动这一项移动到最上方。 
 
-> 如果使用默认的ISO镜像模式不能正确引导USB驱动器，则应该使用DD镜像模式进行烧录。
+## 安装前准备
 
-
-
-<font color=red>Arch Wiki</font >
-
-1. 首先下载Arch的镜像文件
-
-
-
-## 配置前准备
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>我们烧录之后的设备，（这边假设你使用的是 U 盘）,里面其实就有一个 Arch Linux 系统.而这个系统里有我们安装 Arch Linux 一些必要的工具。<font color='red' face=Monaco size=3> 所以我们要做的仅仅只是通过 U 盘里的 Arch Linux 系统给我们的电脑安装上 Arch Linux 系统</font></div>
 
 ### 设置字体
 
+
+当你打开电脑获得了一个终端，默认的终端字体可能会比较小,我们可以使用一下命令来设 tty 终端字体 <font color='red' face=Monaco size=3>下面这个字体相对来讲比较大。</font> 
+
+默认字体路径 : `/usr/share/kbd/consolefonts/`
+
 ```zsh
-# 如果决定默认的tty终端的字体比较小的话,可以使用 setfont 来设置字体
-# 默认字体路径 : /usr/share/kbd/consolefonts/
 setfont /usr/share/kbd/consolefonts/LatGrkCyr-12x22.psfu.gz
 ```
 
 ### 设置键盘布局
 
+如果你是使用 `colemak` 键位的用户，你可以使用一下命令来设置你的键盘布局
+
 ```bash
-# 如果你是使用 colemak 键盘布局的用户,可以使用这条命令来设置键盘布局
 loadkeys colemak 
 ```
 
-**切换键位**
+**临时切换键位**
 
-+ <kbd>Caps_Lock</kbd> 与 <kbd>Ctrl</kbd> 互换
+> 如果你只想使用原键位,不想切换键位的话，下面内容可以忽略。
+
++ <kbd>Caps_Lock</kbd> 与 <kbd>ESC</kbd> 互换
+
+我们先编辑一个文件，当然文件名与路径无所谓这边就在家目录里建立一个叫 `keys.conf` 的文件。
+
+<font color='red' face=Monaco size=3>如果你以前没有使用过 vim ，你可以使用 `nano` 命令来生成这个文件</font>
 
 ```bash
-# 将 Caps_Lock 键 和 Ctrl键互换
 vim keys.conf
-
+```
+下面就是其配置文件的内容
+```bash
 # keys.conf --------------
 keycode 1  = Caps_Lock
 keycode 58 = Escape
 # ------------------------
-
-loadkeys keys.conf # 让配置文件生效
 ```
-
-+ <kbd>Caps_Lock</kbd> 与 <kbd>Esc</kbd> 互换
+保存文件之后，我们可以使用 `loadkeys` 这个命令，让配置生效
 
 ```bash
-# 将 Caps_Lock 键 和 Esc键互换
-
-# keys.conf --------------
-keycode 1  = Caps_Lock
-keycode 58 = Escape
-# ------------------------
-
 loadkeys keys.conf # 让配置文件生效
 ```
 
- 配置一下 vim 配置文件 让自己有一个好的编辑器的使用体验
+如果你习惯使用 `vim` 这个编辑器，那么你可以使用你自己的基础 vim 配置,来配置你的 vim ,<font color='darkcyan' face=Monaco size=3>配置文件名为 `.vimrc` 存放在家目录即可。</font> 
+
+从而让自己有一个好的编辑器的使用体验,毕竟安装 Arch Linux 需要一点时间，如果编辑器的使用体验不好，或者误操作的话，会极大程度影响我们安装系统。
 
 ```vim
 syntax on 
@@ -104,55 +103,80 @@ noremap Q :q<CR>
 
 
 
-```bash
-/usr/share/X11/xkb/keycodes/evdev
-```
-我们可以使用 xev 来捕获键盘的输入来获得对应的 keycode
 
 
+### **设置网络**
++ [官方设置网络的文档](https://wiki.archlinux.org/title/Installation_guide#Connect_to_the_internet)
 
-### 设置网络
-
->  如果有网线的话,直接将网线接入电脑即可
+>  如果有网线的话,直接将网线接入电脑即可,这边就不介绍了。
 
 **使用 WIFI** 
 
-1. 确认网卡,并扫描 WIFI
++ [无线网络官方设置文档](https://wiki.archlinux.org/title/Network_configuration/Wireless)
+
+#### 确认网卡名
+
+首先我们需要先确认网卡名,再根据对应的网卡名扫描附近的 WIFI,这边以 wlan0 网卡做演示.
+
+你需要查看自己设备的网卡名，如 `wlp4s0`
+
+查看自己的网卡设备,一般无线网卡都是以 w 开头。
 
 ```bash
-# 这边以 wlan0 网卡做演示.
-# 查看网卡设备
 ip link
-
-# 开启对应网卡设备 如:
-ip link set wlan0 up
-
-# 扫描附近的 WIFI 信号
-iwlist wlan0 scan | grep ESSID # 扫描出附近的 WIFI 名
-
 ```
 
-2. 使用镜像内的 wifi 工具对生成对应的 WIFI文件
+#### 开启对应网卡设备
+
+开启自己设备内对应的无线网卡设备如:
+
+这条命令就是将 `wlan0` 这个无线网卡设备开启。	
 
 ```bash
-# 使用 wpa_passphrase 生成对应的 wifi 网络连接文件
-# 格式:  wpa_passphrase ESSID( WIFI名 ) password( 对应WIFI的密码 ) > 配置文件生成路径
+ip link set wlan0 up
+```
+
+#### 扫描附近的WIFI
+
+开启之后，我们可以通过我们这个无线网卡去扫描附近的 WIFI 信号,并 <font color='red' face=Monaco size=3> 获取附近的 wifi 名 `(ESSID)`。</font>
+
+```bash
+iwlist wlan0 scan | grep ESSID 
+```
+如果没有获取到你设备的 wifi 很有可能是你的 wifi 所使用的频段是 `5.0GHZ` 而你的网卡并不支持 5.0GHZ 频段的无线网络。
+
+
+> Linux 内有很多无线网络设置连接工具，选择一款自己喜欢的就好。
+
+#### 生成WIFI配置文件
+
+这边使用 `wpa_supplicant/wpa_passphrase` 这两个工具来进行网络连接。
+
+<font color='red' face=Monaco size=3> 我们首先要使用 `wpa_passphrase` 生成对应的 wifi 网络连接文件。</font>
+
+命令格式:  `wpa_passphrase ESSID( WIFI名 ) password( 对应WIFI的密码 ) > 配置文件生成路径`
+
+下面就是我使用 `wpa_passphrase` 生成连接我自己手机热点的配置文件。
++ wifi名为 `Mi_10s`
++ wifi 密码为 `123456789`
+
+```bash
 wpa_passphrase Mi_10s 123456789 > ./wifi.conf
 ```
 
-3. 连接 WIFI
-
+#### 连接 WIFI
+命令格式: `wpa_supplicant -i 网卡名 -c 配置文件路径 &` ( 在后台运行 )
 ```bash
-# 格式 wpa_supplicant -i 网卡名 -c 配置文件路径 & ( 在后台运行 )wpa_supplicant -i wlan0 -c ./wifi.conf &
+wpa_supplicant -i wlan0 -c ./wifi.conf &
 ```
 
-4. 一般来说到这里,已经可以上网了,我们可以测试一下网络环境是否配置成功
+一般来说到这里,已经可以上网了,我们可以测试一下网络环境是否配置成功
 
 ```bash
 ping www.baidu.com
 ```
 
-5. 如果还是不能上网,则说明可能没有自动分配 IP 地址,我们可以使用以下命令,进行动态分配 IP 地址
+如果还是不能上网,则说明可能没有自动分配 IP 地址,我们可以使用以下命令,进行动态分配 IP 地址
 
 ```bash
 dhcpcd &
@@ -160,6 +184,7 @@ dhcpcd &
 
 ### 更正系统时间
 
+我们还需要使用一下命令来修正我们的系统时间。	
 ```bash
 timedatectl set-ntp true
 ```
@@ -174,10 +199,9 @@ timedatectl set-ntp true
 
 
 
-
 > 当然我们还可以使用 cfdisk 等工具进行分区 ( 这边以 fdisk 进行演示 )
 
-**查看当前电脑的所有设备信息**
+**查看当前电脑的所有磁盘设备信息**
 
 ```bash
 fdisk -l 
@@ -220,66 +244,29 @@ fdisk -l
 
 ![Snipaste_20220304_225046.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/2124b5a6c57a4374adb8c7a6392bd8ae.png)
 
+设置启动引导分区
+
 ```bash
-# 设置启动引导分区mkfs.fat -F32 /dev/sda1 # 启动引导分区只能设置成 fat32 格式# 设置 swap 分区mkswap /dev/sda1swapon /dev/sda1# 设置主分区mkfs.ext4 /dev/sda2 # 这步操作可能需要一点时间,只需要一直等到提示符出现即可
+# 启动引导分区只能设置成 fat32 格式
+mkfs.fat -F32 /dev/sda1 
+```
+设置 swap 分区
+
+```bash
+mkswap /dev/sda1swapon /dev/sda1
+```
+设置主分区
+```bash
+# 这步操作可能需要一点时间,只需要一直等到提示符出现即可
+mkfs.ext4 /dev/sda2
 ```
 
-
-
-+512M
 
 ## 正式安装 Arch
 
-更换 pacman 的源
-
-![生成相关镜像列表](https://archlinux.org/mirrorlist/) 
-
-下面为 `2022-06-19` 生成对应的中国镜像源列表
-
-```bash
-##
-## Arch Linux repository mirrorlist
-## Generated on 2022-06-19
-##
-
-## China
-Server = http://mirrors.163.com/archlinux/$repo/os/$arch
-Server = http://mirrors.aliyun.com/archlinux/$repo/os/$arch
-Server = https://mirrors.aliyun.com/archlinux/$repo/os/$arch
-Server = http://mirrors.bfsu.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.bfsu.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirrors.cqu.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.cqu.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirrors.dgut.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.dgut.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirrors.hit.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.hit.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirror.lzu.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirrors.neusoft.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.neusoft.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirrors.nju.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.nju.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.njupt.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirror.redrock.team/archlinux/$repo/os/$arch
-Server = https://mirror.redrock.team/archlinux/$repo/os/$arch
-Server = http://mirrors.shanghaitech.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.shanghaitech.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.sjtug.sjtu.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirrors.wsyu.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.wsyu.edu.cn/archlinux/$repo/os/$arch
-Server = https://mirrors.xjtu.edu.cn/archlinux/$repo/os/$arch
-Server = http://mirrors.zju.edu.cn/archlinux/$repo/os/$arch
-
-
-```
-
-
 
 **挂载分区**
+
 
 ```
 mount /dev/sda2 /mnt
@@ -291,25 +278,21 @@ genfstab -U /mnt >> /mnt/etc/fstab
 ```
 
 
-
-
-
 ```bash
 arch-chroot /mnt # 进入刚刚安装好的 Arch 系统# exit 命令可以退出系统
 ```
 
 
-
-
-
 设置中国时区
 
-
-
 ```bash
-ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime# 同步系统时间hwclock --systohc
+ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 ```
 
+同步系统时间
+```bash
+hwclock --systohc
+```
 
 
 
@@ -639,3 +622,59 @@ Alternatively, if you want to install a specific package version that you didn't
 ```bash
 sudo pacman -U https://archive.archlinux.org/packages/.all/wine-3.4-2-x86_64.pkg.tar.xz
 ```
+
+```bash
+/usr/share/X11/xkb/keycodes/evdev
+```
+
+我们可以使用 xev 来捕获键盘的输入来获得对应的 keycode
+
+
+更换 pacman 的源
+
+[生成相关镜像列表](https://archlinux.org/mirrorlist/) 
+
+下面为 `2022-06-19` 生成对应的中国镜像源列表
+
+```bash
+##
+## Arch Linux repository mirrorlist
+## Generated on 2022-06-19
+##
+
+## China
+Server = http://mirrors.163.com/archlinux/$repo/os/$arch
+Server = http://mirrors.aliyun.com/archlinux/$repo/os/$arch
+Server = https://mirrors.aliyun.com/archlinux/$repo/os/$arch
+Server = http://mirrors.bfsu.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.bfsu.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.cqu.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.cqu.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.dgut.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.dgut.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.hit.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.hit.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirror.lzu.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.neusoft.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.neusoft.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.nju.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.nju.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.njupt.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirror.redrock.team/archlinux/$repo/os/$arch
+Server = https://mirror.redrock.team/archlinux/$repo/os/$arch
+Server = http://mirrors.shanghaitech.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.shanghaitech.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.sjtug.sjtu.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.wsyu.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.wsyu.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.xjtu.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.zju.edu.cn/archlinux/$repo/os/$arch
+```
+```bash
+sudo pacman -S nautilus
+```
+

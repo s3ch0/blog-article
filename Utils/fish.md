@@ -10,6 +10,12 @@ brblack, brred, brgreen, bryellow, brblue, brmagenta, brcyan, brwhite
 
 ## 变量
 
+## 环境变量
+
+```bash
+fish_add_path -a /home/secho/.local/bin
+```
+
 ## 判断
 
 ## 分支
