@@ -677,4 +677,5 @@ Server = http://mirrors.zju.edu.cn/archlinux/$repo/os/$arch
 ```bash
 sudo pacman -S nautilus
 ```
-
+terminal
+sudo pacman -S tabby
