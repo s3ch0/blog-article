@@ -679,3 +679,6 @@ sudo pacman -S nautilus
 ```
 terminal
 sudo pacman -S tabby
+
+sudo pacman -S libnotify
+notify-send helloworld
