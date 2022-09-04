@@ -250,14 +250,17 @@ fdisk -l
 # 启动引导分区只能设置成 fat32 格式
 mkfs.fat -F32 /dev/sda1 
 ```
-设置 swap 分区
+
+我们这边将 `sda1` 设置成 swap 分区
 
 ```bash
 mkswap /dev/sda1swapon /dev/sda1
 ```
+
 设置主分区
+这步操作可能需要一点时间,只需要一直等到提示符出现即可
+
 ```bash
-# 这步操作可能需要一点时间,只需要一直等到提示符出现即可
 mkfs.ext4 /dev/sda2
 ```
 
@@ -267,34 +270,38 @@ mkfs.ext4 /dev/sda2
 
 **挂载分区**
 
+将想要被安装系统的分区挂载到 `/mnt` 下
+
 
 ```
 mount /dev/sda2 /mnt
 ```
 
+生成文件系统
 
 ```bash
 genfstab -U /mnt >> /mnt/etc/fstab
 ```
 
+进入刚刚安装好的 Arch 系统
 
 ```bash
-arch-chroot /mnt # 进入刚刚安装好的 Arch 系统# exit 命令可以退出系统
+# exit 命令可以退出系统
+arch-chroot /mnt
 ```
-
 
 设置中国时区
 
 ```bash
-ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+ln -sf \
+/usr/share/zoneinfo/Asia/Shanghai \
+/etc/localtime
 ```
 
 同步系统时间
 ```bash
 hwclock --systohc
 ```
-
-
 
 
 设置语言
@@ -306,38 +313,27 @@ hwclock --systohc
 然后进入系统 执行 `locale-gen `
 
 
-
-
-
 在 `/mnt/etc/locale.conf` 里添加 `LANG=en_US-UTF-8` 这样我们的系统就是英文的了
-
-
-
 
 
 修改 `/mnt/etc/vconsole.conf` 文件
 
+KEYMAP = colemak 如果不是 colemak 键盘用户,千万不要加这一行!keycode 1 = Caps_Lockkeycode 58 = Escape
+
+
 ```bash
-# KEYMAP = colemak 如果不是 colemak 键盘用户,千万不要加这一行!keycode 1 = Caps_Lockkeycode 58 = Escape
+# this is a good for your 
 ```
-
-
 
 网络设置
 
 修改 `/mnt/etc/hostname` 文件 里面只需要填写自己主机的名字
-
-
 
 修改 `/mnt/etc/hosts`文件
 
 ```bash
 # Static table lookup for hostnames.# see hosts(5) for details.127.0.0.1 localhost::1 localhost127.0.0.1 zh.localdomain zh
 ```
-
-
-
-
 
 更改 root 密码
 
@@ -347,27 +343,19 @@ hwclock --systohc
 # 运行下面这个命令后,就可以输入密码了passwd
 ```
 
-
-
-
-
 安装 grub 引导
 
 
+intel-ucode 的作用是为我们的电脑更新CPU驱动的,如果是AMD架构的电脑可以安装 amd-ucode# os-prober   的作用是用来寻找电脑内其他操作系统的一个工具
 
 ```bash
-pacman -S grub efibootmgr intel-ucode os-prober# intel-ucode 的作用是为我们的电脑更新CPU驱动的,如果是AMD架构的电脑可以安装 amd-ucode# os-prober   的作用是用来寻找电脑内其他操作系统的一个工具
+pacman -S grub efibootmgr intel-ucode os-prober
 ```
-
-
-
 
 
 ```bash
 mkdir /boot/grubgrub-mkconfig > /boot/grub/grub.cfggrub-mkconfig -o /boot/grub/grub.cfg
 ```
-
-
 
 确认自己的电脑架构
 
@@ -416,22 +404,15 @@ pacman -S neovim vi zsh fish wpa_supplicant dhcpcd
 ```
 
 
-
-
-
-
-
-
-
-更新源
+更新系统源,并更新系统内以装的软件。
 
 ```bash
 pacman -Syyu
 ```
 
-
-
-
+```bash
+sudo pacman -Sy
+```
 
 对 pacman 提速
 
@@ -471,7 +452,6 @@ pacman -S man base-devel
 ```
 
 
-
 创建一个用户
 
 ```bash
@@ -502,7 +482,6 @@ sudo pacman -S xcursor-themes lxappearance
 ![](./打造属于自己的Arch.assets/2022-08-19_14-37.png)
 
 
-
 安装 `deepin`
 
 ```bash
@@ -510,16 +489,7 @@ sudo pacman -S deepin deepin-extra
 sudo pacman -S xclip python python-pip python2 git xterm
 ```
 
-
-
 安装 `KDE`
-
-
-
-
-
-
-
 
 
 安装
@@ -537,7 +507,6 @@ pip install -i https://mirrors.aliyun.com/pypi/simple dbus-python
 sudo pacman -S tlp
 sudo systemctl enable tlp.service
 sudo systemctl start tlp.service
-
 ``
 
 
@@ -682,3 +651,550 @@ sudo pacman -S tabby
 
 sudo pacman -S libnotify
 notify-send helloworld
+
+```bash
+# PACKBUILD
+makepkg -si
+# .zst
+sudo pacman -U ./xxx.zst
+```
+![](./打造属于自己的Arch.assets/2022-09-01_01-09.png)
+```bash
+sudo rm /var/lib/pacman/db.lck
+```
+```bash
+sudo pacman -Syyu                                                ✔ 
+[sudo] password for md: 
+:: Synchronizing package databases...
+ core                  166.4 KiB  3.78 MiB/s 00:00 [######################] 100%
+ extra                1964.7 KiB   985 KiB/s 00:02 [######################] 100%
+ community               6.6 MiB  2.27 MiB/s 00:03 [######################] 100%
+ multilib              178.9 KiB  5.29 MiB/s 00:00 [######################] 100%
+ openbangla           1113.0   B  0.00   B/s 00:00 [######################] 100%
+ openbangla.sig        566.0   B  0.00   B/s 00:00 [######################] 100%
+:: Starting full system upgrade...
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+error: could not read db 'community' (Damaged tar archive)
+ there is nothing to do
+```
+
+Remove your database
+
+` sudo rm -f /var/lib/pacman/sync/*`
+
+Then rerun pacman
+
+`sudo pacman -Syyu`
+
+If that does not work either it could be a mirror issue and you should update your mirror pool and list (servers respond with a 404 page on errors) - you can check the content of the community.db file - it should not contain any html code
+
+`less /var/lib/pacman/sync/community.db`
+
+Rebuild your mirror pool and mirror list
+
+`sudo pacman-mirrors --continent`
+
+the return pacman
+
+`sudo pacman -Syyu`
+[Solved link](https://forum.manjaro.org/t/error-with-pacman-database/62722)
+
+锁屏工具
+
+```bash
+sudo pacman -S xlockmore
+```
+[](https://wiki.archlinux.org/title/Session_lock)
+
+```bash
+sudo pacman -S slock
+```
+
+```bash
+xautolock -time 1 -locker slock &
+# -time minutes
+```

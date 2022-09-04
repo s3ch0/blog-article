@@ -303,6 +303,7 @@ cdp enable # 接口模式下启动 cdp
 
 
 ## 情报分析
+
 ### casefile
 + 离线绘制关系图
   + IT 安全事件
@@ -314,3 +315,254 @@ cdp enable # 接口模式下启动 cdp
   + 事件调查 、 案件分析
 + 简化版的 Maltego ( 没有 transforms )
 
+我们知道在警方调查复杂的刑事案件，或者犯罪集团时会采用如下的人物关系图。
+
+<div align='center'><img src='./info_gathering.assets/0.jpg' width='70%' styles='text-align:center;'></div>
+
+其实不管是搞安全，还是渗透，搞清楚目标设备的关系，是非常重要的，而使用一种可视化的方式进行显示，更有利于我们分析。
+
+<font color='red' face=Monaco size=3>而 casefile 其实就是做这样的工作，方便我们绘制类似于人物关系的可视化图。</font>
+
+![alt](./info_gathering.assets/2022-08-31_14-21.png)
+
+案件调查
+
++ graph
+  + 用于分析一个事件的完整图形
+  + 包含所有信息片段及关联
++ entities
+  + 按类型划分的信息片段类型
+  + 用于关联分析的信息片段
+  + note 描述信息
+  + Attackment 附件图片，文档
+  + Properities 属性
+  + bookmark 显示书签，颜色。
+
+![alt](./info_gathering.assets/2022-08-31_14-48.png)
+
+<table>
+  <tr>
+    <td>Attackment 附件</td>
+    <td>Properities 属性</td>
+    <td>Bookmark / note</td>
+  </tr>
+  <tr>
+    <td><img src='./info_gathering.assets/2022-08-31_15-09.png' width='300px'></td>
+    <td><img src='./info_gathering.assets/2022-08-31_15-16.png' width='400px'></td>
+    <td><img src='./info_gathering.assets/2022-08-31_15-13.png' width='300px'></td>
+  </tr>
+</table>
+
+
+![alt](./info_gathering.assets/2022-08-31_15-28.png)
+
+输入完密码后，我们就多了一个后缀为 `.mtgl` 的文件，而这个后缀的文件就是 `Maltego` 能识别的文件，当下次我们在用 casefile 打开这个文件时，就需要我们输入密码，才能打开。
+
+
+协作
+
++ 与团队成员共享 Graph
++ 共同编辑
++ 聊天沟通
++ `Session Name` 聊天室名称
++ `Security Name` 密码
++ `Server` 只支持 `Paterva` 官方服务器
++ `Encryption` 加密密钥长度
+
+casefile 还能开启共享协作功能
+我们只需要点击如下按钮，进行相关配置之后，就能开启共享协作的功能了。
+
+![alt](./info_gathering.assets/2022-08-31_15-51.png)
+
+到这个界面，点击生成之后，我们就获得了一串密钥，而这个密钥一定要保存下来，因为后续所有人进房间都是通过房间号和这个密钥
+
+![alt](./info_gathering.assets/2022-08-31_15-55.png)
+
+## 深层信息收集
+### dmirty
+> Deepmagic Information Gathering Tool
++ 主动加被动信息收集辅助工具
++ TCP 端口扫描
++ IP,域名Whois 信息查询
++ Netcraft.com 主机信息
++ 子域名查询
++ 邮件地址查询
++ 主机启动时间
+
+---
+
+参数与使用方法。
++ 被动信息收集:
+  + `-i` Whois 查询 IP 地址
+  + `-w` Whois 查询域名
+  + `-n` netcraft.com 站点搜索
+  + `-s` 搜索子域 (搜索引擎，最大 40 个字符)
+  + `-e` 邮件地址 (搜索引擎，最大 50 个字符)
++ 主动信息收集 
+  + `-p` 端口扫描
+  + `-f` 与 `-p` 参数一起使用，显示 filitered 状态的端口
+  + `-b` 与 `-p` 参数一起使用，显示 open 端口的 banner 信息
+  + `-t` 控制速度 (0-9,默认 2)
+
+```bash
+dmitry -wines host.net  # 被动收集
+dmitry -pfb -t 9 host.net
+```
+![alt](./info_gathering.assets/2022-08-31_22-22.png)
+
+## 分布式扫描管理
+
+### ~~dnmap~~
+
+<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'><code>dnmap</code>这款工具，默认没有在 Kali 上集成了，可能是因为它使用 Python2 的原因，也有可能因为其并没有人进行维护的原因。
+<font color='red' face=Monaco size=3>总的来说这款工具相对来说已经比较老了</font></div>
+
+当然我们还是可以通过以下命令进行安装 [dnmap 使用/安装](https://blog.csdn.net/whatday/article/details/78763133)
+
+```bash
+sudo apt-get install python-openssl python-twisted
+wget http://downloads.sourceforge.net/project/dnmap/dnmap_v0.6.tgz
+tar -xvzf dnmap_v0.6.tgz
+```
+<font color='red' face=Monaco size=3>面对小地址范围的扫描如 一个，几个或几十个一个网段，它都能工作得很好</font>。完全没必要使用 `dnmap`这款分布式扫描工具。但是面对非常大的网络，想要完整地进行扫描，这时我们就要使用 `dnamp` 了。
+
+分布式 nmap 扫描框架
+使用于扫描大量地址
+
+![alt](./info_gathering.assets/Snipaste_2022-08-31_22-49-01.png)
+
+基本用法
+
++ 服务器端 （ 监听46001端口 ）
+  + `dnamp_server -f commands.txt`
++ 客户端
+  + `dnamp_client -s <server-ip> -a <alias>`
++ C/S 通信使用TLS加密
+  + `dnmap_server -f commands.txt -P server.pem`
+  + Kali 自带证书过期已久，使用报错
+    + ~~`/usr/share/dnmap/server.pem`~~
+
+我们可以使用以下命令来生成新的密钥
+
+```bash
+openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 \
+-keyout key.pem -out server.pem; \
+cat key.pem >> server.pem; \
+rm -f key.pem
+```
+## 域名信息收集
+
++ dns 是最主要的服务暴露信息来源
++ 收集 DNS 域名信息
+  + 发现开放端口的主机
+  + 发现子域及开放端口
+  + DNS 域名注册信息
+  + DNS 服务器区域传输
+
+我们知道，域名信息收集的方式有以下几种，所以接下来的工具就是针对这几个方式,来尝试获取目标域名相关的信息。
++ 字典爆破
++ 搜索引擎
++ whois 查询
++ 区域传输
+
+---
+
+### dnsenum
+
++ dns 是最主要的服务暴露信息来源
++ 收集 DNS域名信息
+  + 发现开放端口的主机
+  + 发现子域名及开放端口
+  + DNS 域名注册信息
+  + DNS 服务器区域传输
+
++  综合的域名信息查询工具
+   +  A , NS , MX 记录， bind 版本及区域传输
++ 字典爆破
+  + `-f /usr/share/dnsenum/dns.txt`
++ 反向域名解析
+  + 对发现地址所在的 C 段进行反向查询
+  + 禁用 `--noreverse`
++ Google 搜索
+  + `-s` 子域数量， `-p` 页数
+
+```bash
+dnsenum baidu.com
+```
+
+### dnsmap
+<font color='red' face=Monaco size=3>这个工具也有点过时了，它只支持单线程模式。并且也没人维护了。</font>
+
+它功能单一，只能用来进行域名的爆破，但是使用起来效果还行，所以还是被 kali 使用。
+
+
++ 字典爆破子域名和主机记录
++ 单线程
++ 默认使用内建字典文件  
+
+```bash
+dnsmap zhouhaobusy.com
+dnsmap -w wordlist.txt -r result.txt zhouhaobusy.com
+dnsmap-bulk.sh domains.txt
+```
++ `-d` 两次查询间隔时间 (毫秒)  
+```bash
+dpkg -L dnsmap
+# /usr/share/dnsmap/wordlist_TLAs.txt
+```
+<font color='red' face=Monaco size=3>字典文件一定要在域名后面,不然会报如下错误</font> 
+
+![alt](./info_gathering.assets/2022-09-01_10-44.png)
+
+当我们放在后面时，发现能成功执行。
+
+![alt](./info_gathering.assets/2022-09-01_10-30.png)
+
+### dnsrecon
+
++ `dnsrecon -d abcd.cn`
+  + 基本（SOA,NS,A,AAAA,MX,SRV）
++ `dnsrecon -r 8.8.8.0/26`
+  + 反向
++ `dnsrecon -a -d abcd.com`
+  + 标准加 axfr 区域传输
++ `dnsrecon -w -d abcd.com`
+  + 标准加 whois 查询
++ `dnsrecon -g -d abcd.com`
+  + 标准加 google
++ `dnsrecon -D dict abcd.com`
+  + 字典爆破主机和子域名
++ `dnsrecon -z -d weberdns.de`
+  + 当域启动了 DNSSEC ,对于缺乏防护的DNS服务器，可以利用 NSEC 记录获取区域内全部记录，无需爆破
+
+## DNS 区域文件检查
+### dnswalk
+
+   
+DNS 区域文件检查工具
+发现配置问题
+
+> 其实这款工具开发初衷,并不是给我们渗透测试人员使用的,而是给网站管理员，查看他们的 DNS 配置文件是否正确，并且规范。
+所以要求，主机必须开放区域传输，我们才能使用这条命令。
+
+而一般来讲，网站出于安全考虑，对于陌生的 IP 地址都是禁止其对网站进行区域传输
+
+`dnswalk -radmilF`
+  + `-r` 对指定域的子域进行递归查询
+  + `-a` 发现重复 A 记录发出告警
+  + `-d` 将调试状态信息输出到 stderr
+  + `-m` 仅检查上次运行后发生变化的记录
+  + `-F` 检查 PTR 记录 (反向域名记录) IP 是否与对应 A 记录相符
+  + `-i` 不检查域名中无效字符
+  + `-I` 检查区域文件中 NS 记录主机是否能返回正确的权威应答.
+   
+<font color='red' face=Monaco size=3>`dnswalk` 这条命令运行时，后面接的域名一定要在结尾添加 `.`</font>
+
+应该按照如下命令使用。
+
+```bash
+dnswalk sina.com.cn.
+```
+
+## 域名解析过程追踪
+### dnstracer
