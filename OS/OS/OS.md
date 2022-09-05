@@ -1925,7 +1925,7 @@ void Tconsume() { while (1) printf(")"); }
 + 打完游戏且洗完头后继续执行 date()，否则等待
 
 生产者/消费者问题
-+ 左括号：深度$k<n$  时 printf，否则等待
++ 左括号：深度 $k<n$  时 printf，否则等待
 + 右括号：$k>0$ 时 printf，否则等待
 	+ 再看一眼 [pc.c](./OS.Demo/pc.c)
 
@@ -1946,6 +1946,7 @@ Conditional Variables (条件变量, CV)
 
 
 条件变量：实现生产者-消费者
+
 ```c
 void Tproduce() {
   mutex_lock(&lk);
@@ -1963,9 +1964,31 @@ void Tconsume() {
 }
 ```
 
-压力测试：[pc-cv.c](./OS.Demo/pc-cv.c)；模型检验：[pc-cv.py](./OS.Demo/pc-cv.py)
++ 压力测试：[pc-cv.c](./OS.Demo/pc-cv.c);  模型检验：[pc-cv.py](./OS.Demo/pc-cv.py)
++ (Small scope hypothesis)
 
-(Small scope hypothesis)
+> 发现 pc-cv.c 在多个生产者和消费者的情况下并不能正确执行。
+
+当我们在只有一对生产者和消费者时，我们能成功获得我们想要的结果	
+
+![alt](./OS.assets/2022-09-05_14-14.png)
+
+但当我们尝试多对生产者和消费者时，却发现程序不能正常运行了，给我们输出了错误的结果。
+
+![alt](./OS.assets/2022-09-05_14-16.png)
+
+<font color='red' face=Monaco size=3>当我们程序存在bug时，我们要尽量隔离这个bug最小的触发条件.</font>
+
+如下图，我们发现当有一个生产者，两个消费者时,就能成功触发这个bug，导致程序不能正常输出我们想要的结果。
+
+![alt](./OS.assets/2022-09-05_14-18.png)
+
+这个bug的触发原因: `Tcustomer` 唤醒了同类的 `Tcustomer`,导致打印出多个右括号 `））））`
+
+所以我们需要 `Customer` 只唤醒 `Producter`  `Producter` 只唤醒 `Customer` ，正确的解决方式是我们需要两个条件变量
+
+<font color='red' face=Monaco size=3></font>
+
 
 
 条件变量：正确的打开方式
@@ -1990,10 +2013,8 @@ broadcast(&cv);
 ```
 + 修改 [pc-cv.c](./OS.Demo/pc-cv.c) 和 [pc-cv.py](./OS.Demo/pc-cv.py)
 
-
-
-
 条件变量：实现并行计算
+
 ```c
 struct job {
   void (*run)(void *arg);
@@ -2014,9 +2035,10 @@ while (1) {
                       // 注意回收分配的资源
 }
 ```
-条件变量：更古怪的习题/面试题
-有三种线程，分别打印 `<`, `>`, 和 `_`
 
+> 条件变量：更古怪的习题/面试题
+
+有三种线程，分别打印 `<`, `>`, 和 `_`
 + 对这些线程进行同步，使得打印出的序列总是 `<><_` 和 `><>_` 组合
 
 使用条件变量，只要回答三个问题：
@@ -2029,58 +2051,56 @@ while (1) {
 
 复习：互斥锁和更衣室管理
 
+**操作系统 = 更衣室管理员**
 
-操作系统 = 更衣室管理员
++ 先到的人 (线程)
+	+ 成功获得手环，进入游泳馆
+	+ *lk = 🔒，系统调用直接返回
++ 后到的人 (线程)
+	+ 不能进入游泳馆，排队等待
+	+ 线程放入等待队列，执行线程切换 (yield)
++ 洗完澡出来的人 (线程)
+	+ 交还手环给管理员；管理员把手环再交给排队的人
+	+ 如果等待队列不空，从等待队列中取出一个线程允许执行
+	+ 如果等待队列为空，*lk = ✅
 
-先到的人 (线程)
-成功获得手环，进入游泳馆
-*lk = 🔒，系统调用直接返回
-后到的人 (线程)
-不能进入游泳馆，排队等待
-线程放入等待队列，执行线程切换 (yield)
-洗完澡出来的人 (线程)
-交还手环给管理员；管理员把手环再交给排队的人
-如果等待队列不空，从等待队列中取出一个线程允许执行
-如果等待队列为空，*lk = ✅
-管理员 (OS) 使用自旋锁确保自己处理手环的过程是原子的
-
-
-更衣室管理
-完全没有必要限制手环的数量——让更多同学可以进入更衣室
-
-管理员可以持有任意数量的手环 (更衣室容量上限)
-先进入更衣室的同学先得到
-手环用完后才需要等同学出来更衣室管理
-完全没有必要限制手环的数量——让更多同学可以进入更衣室
-
-管理员可以持有任意数量的手环 (更衣室容量上限)
-先进入更衣室的同学先得到
-手环用完后才需要等同学出来
+<font color='red' face=Monaco size=3>管理员 (OS) 使用自旋锁确保自己处理手环的过程是原子的</font> 
 
 
-更衣室管理 (by E.W. Dijkstra)
+**更衣室管理**
+
+> 完全没有必要限制手环的数量——让更多同学可以进入更衣室
+
++ 管理员可以持有任意数量的手环 (更衣室容量上限)
+	+ 先进入更衣室的同学先得到
+	+ 手环用完后才需要等同学出来
 
 
-做一点扩展——线程可以任意 “变出” 一个手环
 
-把手环看成是令牌
-得到令牌的可以进入执行
-可以随时创建令牌
+**更衣室管理 (by E.W. Dijkstra)**
+
+
++ 做一点扩展——线程可以任意 “变出” 一个手环
+	+ 把手环看成是令牌
+	+ 得到令牌的可以进入执行
+	+ 可以随时创建令牌
+
 “手环” = “令牌” = “一个资源” = “信号量” (semaphore)
 
-P(&sem) - prolaag = try + decrease; wait; down; in
-等待一个手环后返回
-如果此时管理员手上有空闲的手环，立即返回
-V(&sem) - verhoog = increase; post; up; out
-变出一个手环，送给管理员
-信号量的行为建模: [sem.py](./OS.Demo/sem.py)
++ P(&sem) - prolaag = try + decrease; wait; down; in
+	+ 等待一个手环后返回
+	+ 如果此时管理员手上有空闲的手环，立即返回
++ V(&sem) - verhoog = increase; post; up; out
+	+ 变出一个手环，送给管理员
++ 信号量的行为建模: [sem.py](./OS.Demo/sem.py)
 
 
-信号量：实现生产者-消费者
+**信号量：实现生产者-消费者**
+
 信号量设计的重点
 
-考虑 “手环” (每一单位的 “资源”) 是什么，谁创造？谁获取？
-[pc-sem.c](./OS.Demo/pc-sem.c)
++ 考虑 “手环” (每一单位的 “资源”) 是什么，谁创造？谁获取？
+	+ [pc-sem.c](./OS.Demo/pc-sem.c)
 
 ```c
 void producer() {
@@ -2094,8 +2114,70 @@ void consumer() {
   V(&empty);
 }
 ```
++ 在 “一单位资源” 明确的问题上更好用
 
-在 “一单位资源” 明确的问题上更好用
+#### 哲学家吃饭问题
+哲学家吃饭问题 (E. W. Dijkstra, 1960)
+哲学家 (线程) 有时思考，有时吃饭
+
+吃饭需要同时得到左手和右手的叉子
+当叉子被其他人占有时，必须等待，如何完成同步？
+如何用互斥锁/信号量实现？
+失败与成功的尝试
+失败的尝试
+
+[philosopher.c](./OS.Demo/philosopher.c) (如何解决？)   
+
+成功的尝试 (万能的方法)
+
+
+```c
+mutex_lock(&mutex);
+while (!(avail[lhs] && avail[rhs])) {
+  wait(&cv, &mutex);
+}
+avail[lhs] = avail[rhs] = false;
+mutex_unlock(&mutex);
+
+mutex_lock(&mutex);
+avail[lhs] = avail[rhs] = true;
+broadcast(&cv);
+mutex_unlock(&mutex);
+```
+
+忘了信号量，让一个人集中管理叉子吧！
+“Leader/follower” - 生产者/消费者
+
+分布式系统中非常常见的解决思路 (HDFS, ...)
+```bash
+void Tphilosopher(int id) {
+  send_request(id, EAT);
+  P(allowed[id]); // waiter 会把叉子递给哲学家
+  philosopher_eat();
+  send_request(id, DONE);
+}
+
+void Twaiter() {
+  while (1) {
+    (id, status) = receive_request();
+    if (status == EAT) { ... }
+    if (status == DONE) { ... }
+  }
+}
+```
+忘了那些复杂的同步算法吧！
+你可能会觉得，管叉子的人是性能瓶颈
+
+一大桌人吃饭，每个人都叫服务员的感觉
+Premature optimization is the root of all evil (D. E. Knuth)
+抛开 workload 谈优化就是耍流氓
+
+吃饭的时间通常远远大于请求服务员的时间
+如果一个 manager 搞不定，可以分多个 (fast/slow path)
+把系统设计好，使集中管理不成为瓶颈
+
+[Millions of tiny databases](https://www.usenix.org/conference/nsdi20/presentation/brooker) (NSDI'20) [Download Link](./OS.assets/nsdi20-paper-brooker.pdf)
+
 
 ## 真实世界的并发编程
 
