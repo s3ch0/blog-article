@@ -63,3 +63,12 @@ sudo pacman -S graphicsmagick
 ```bash
 gm convert MY-GIF.gif -coalesce +adjoin GIF_Frame%3d.png
 ```
+
+```bash
+sudo pacman -S gnuplot
+```
+
+```bash
+gnuplot
+> plot "flag.txt"
+```

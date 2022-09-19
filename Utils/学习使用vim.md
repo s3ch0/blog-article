@@ -260,3 +260,28 @@ zfa{
 <font size=3 color=green>参考</font>
 + [vim-awesome](https://vimawesome.com/)
 
+
+```bash
+Ctrl + a：移动光标到命令行首 
+Ctrl + e：移动光标到命令行尾
+ 
+Ctrl + b：同键盘左键，向左移动光标
+Ctrl + f：同键盘右键，向右移动光标
+ 
+# 在mac中,需要在终端首选项中设置{将Option键用做Meta键}
+Alt + b：向前移动一个词的距离
+Alt + f：向后移动一个词的距离
+ 
+# 删除
+Ctrl + h：同Backspace，退格向左删除
+Ctrl + d：同delete，向右删除
+Ctrl + u：从当前光标所在位置向左剪切全部命令 
+Ctrl + k：从当前光标所在位置向右剪切全部命令
+ 
+Ctrl + p：显示上一条命令，同向上箭头 
+Ctrl + n：显示下一条命令，同向下箭头
+ 
+# atom等编辑器
+Ctrl + Enter: 向下新建一行
+Ctrl + Shift + Enter: 向上新建一行
+```

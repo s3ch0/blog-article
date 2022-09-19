@@ -278,6 +278,18 @@ print("g({0:.3f}) = {1:.3f}".format(x, y))
 
 ```
 
+我们还能使用 如下方式进行简化 `format` 的使用：
+
+```python
+for i in range(1000):
+	url = f"https://www.zhouhaobusy.com/?num={i}"\
+    print(url)
+```
+
+
+
+
+
 #### 输出对齐操作
 
 > 占位符式对齐操作

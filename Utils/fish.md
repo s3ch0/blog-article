@@ -35,3 +35,5 @@ fish_add_path -a /home/secho/.local/bin
 ## Prompt
 
 ## Startup
+
+alt + v 在终端内编辑命令
