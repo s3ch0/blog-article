@@ -660,6 +660,7 @@ sudo pacman -S flareget
 sudo pacman -S simplenote
 sudo pacman -S simplescreenrecorder
 sudo pacman -S screenkey
+sudo pacman -S nomacs
 sudo pacman -S pcmanfm
 sudo pacman -S okular
 sudo pacman -S audacity

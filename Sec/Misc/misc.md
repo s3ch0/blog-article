@@ -72,3 +72,13 @@ sudo pacman -S gnuplot
 gnuplot
 > plot "flag.txt"
 ```
+
+```bash
+于是又用到一个工具：montage，这个工具用法很多，也很强大
+
+用命令：montage flag*.png -tile x1 -geometry +0+0 flag.png
+
+-tile是拼接时每行和每列的图片数，这里用x1，就是只一行
+
+-geometry是首选每个图和边框尺寸，我们边框为0，图照原始尺寸即可
+```
