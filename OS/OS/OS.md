@@ -146,7 +146,7 @@ ENIAC 程序是用物理线路 “hard-wire” 的
 ---
 ### 1950s 的计算机
 更快更小的逻辑门 (晶体管)、更大的内存 (磁芯)、丰富的 I/O 设备
-+ I/<br>O 设备的速度已经严重低于处理器的速度，中断机制出现 (1953)
++ I/O 设备的速度已经严重低于处理器的速度，中断机制出现 (1953)
 <div align='center'>
   <img src='./OS.assets/2022-07-29_18-26.png' width='70%' styles='text-align:center;'>
 </div>
@@ -310,7 +310,7 @@ PASCAL (1970), C (1972), …
 + <font color="red" face=Monaco size=3> 操作系统 = 对象 + API </font>
 + 课程涉及：POSIX + 部分 Linux 特性
 
-> j(实现/硬件视角) 如何实现操作系统提供的服务？
+> (实现/硬件视角) 如何实现操作系统提供的服务？
 + <font color="red" face=Monaco size=3> 操作系统 = C 程序 </font>
 	+ 完成初始化后就成为 interrupt/trap/fault handler
 + 课程涉及：xv6, 自制迷你操作系统
@@ -386,11 +386,7 @@ int main() {
 <div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px; font-family:"Source Code Pro";font-size:16px'>
  Make each program do one thing well<br>
 Expect the output of every program to become the input to another
-Hmm....
-
-  <div style='text-align:right;padding:0 15px;'>
-  -- Unix philosophy
-  </div>
+Hmm....<div style='text-align:right;padding:0 15px;'>-- Unix philosophy</div>
 </div>
 
 ### 什么是程序?(源代码)
