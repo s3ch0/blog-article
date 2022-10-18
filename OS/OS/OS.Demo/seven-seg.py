@@ -1,5 +1,5 @@
 import fileinput
- 
+
 TEMPLATE = '''
 \033[2J\033[1;1f
      AAAAAAAAA
@@ -13,7 +13,7 @@ TEMPLATE = '''
    EE       CC
    EE       CC
     DDDDDDDDD
-''' 
+'''
 BLOCK = {
     0: '\033[37m░\033[0m', # STFW: ANSI Escape Code
     1: '\033[31m█\033[0m',

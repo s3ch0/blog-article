@@ -1,20 +1,23 @@
 > 靶机环境介绍
-+ [hacksudo--Thor](https://download.vulnhub.com/hacksudo/hacksudo---Thor.zip) 
-+ 难度等级 <font color=yellow> 中</font>
++ [Fawkes](https://download.vulnhub.com/harrypotter/Fawkes.ova) 
++ 难度等级 <font color=red>难</font>
 
 目标:
-+ 取得 root 权限 +  Flag
-
++ 取得 root 权限 +  3个Flag
 
 **所用技术栈**
 + 主机发现
 + 端口扫描
 + WEB 信息收集
-+ **开源源代码泄露**
-+ 默认账号密码
-+ SQL 注入
-+ 破壳漏洞
-+ GTFOBins提权
++ **FTP 服务攻击**
++ 缓冲区溢出
++ 模糊测试
++ 漏洞利用代码编写
++ 流量转包分析
++ 堆溢出漏洞攻击
++ Metasploit (MSF)
++ 手动修复 EXP 代码
++ 本地提权
 
 ## 主机发现与端口扫描
 
@@ -24,3 +27,7 @@
 sudo arp-scan -l
 ```
 
+
+```bash
+sudo nmap -p21,22,80,2222,9898 -sV -sC 10.0.2.16
+```
