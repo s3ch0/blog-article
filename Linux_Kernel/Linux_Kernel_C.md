@@ -79,10 +79,7 @@ errno;
 
 ![1.png](./Linux_Kernel.assets/2022-01-12_10-32.png)
 
-
 `strerror()` 将 `errorno` 以提示信息输出(格式化)
-
-
 
 ```c
 // perror(); print a system error message 
@@ -109,11 +106,7 @@ int main(){
 
 ```
 
-
-
 <font color="red" face=Monaco size=3>追加属性 （writing at end of file）一定是在文件最后一个有效字节的下一个位置  </font>
-
-
 
 看到有 `fclose();` 这个函数,我们可以知道返回的 `FILE *` 类型的变量是在堆上的
 
@@ -121,8 +114,6 @@ int main(){
 
 + 如果在栈上，不能返回局部变量的地址,当fopen()函数调用结束，局部变量都被释放掉了
 + 静态区里共用同一块空间，所以如果在静态区，那么后一次使用的 fopen() 会把上一次使用的fopen()的结果覆盖
-
-
 
 
 ---
@@ -153,7 +144,7 @@ int main() {
 而默认最大文件打开数为1021
 
 ![Linux_Kernel](./Linux_Kernel.assets/2022-03-20_17-32.png) 
- 
+
 
 因为每个进程默认都会打开标准输入、标准输出、标准错误输出，占用了0、1、2。在c语言的标准库`unistd.h`中定义，代码如下：
 
@@ -171,8 +162,6 @@ int main() {
 oct(0o666 & (~umask))
 ```
 所以 umask 值越大,默认创建出来的文件权限就越低
-
-
 
 ```c
 getchar()  is equivalent to getc(stdin)
@@ -253,8 +242,6 @@ fread(buffer,10,1,fp);
 // 2 -> 0 -> ??? 所以保险起见最好使用上面这种，单字节读取
 ```
 
-
-
 > atoi / sprintf 函数的基本使用
 ```c
 
@@ -294,7 +281,7 @@ rewind() == (void) fseek(stream,0L,SEEK_SET)
 
 <font color="red" face=Monaco size=3> 迅雷，等下载器下载文件时，刚开始时很快产生了一个磁盘占用和需下载的文件完全一样的文件 </font>
 
- 
+
 `fseeko` `ftello` 用来解决偏移量不够的问题但不是标准的C函数
 
 ```make
@@ -333,8 +320,6 @@ int main(){
 
 当然我们可以使用 `setvbuf()` 来修改缓冲模式,但一般不建议修改缓冲模式
 
-
-
 完整地获取一行 
 
 ```makefile
@@ -360,8 +345,6 @@ They were standardized in POSIX.1-2008.
 
 <font color="gray" face=Monaco size=3> 一个文件如果说没有任何的硬链接指向它，而当前文件的打开计数又已经成为 0 值，那么这块数据就会被操作系统释放 </font>
 
-
-
 ### 系统调用IO
 
 > `fd (file descriptors)` 文件描述符是在系统调用IO中贯穿始终的类型
@@ -376,10 +359,7 @@ They were standardized in POSIX.1-2008.
 + <font color="red" face=Monaco size=3> 文件IO的响应速度快</font>
 + 而标准IO的吞吐量大
 
-
 **标准IO与系统调用IO不可混用** (标准IO有缓冲机制,每次操作的文件指针位置不好确定是否进行了修改)
-
-
 
 ```c
 #include <stdio.h>
@@ -429,7 +409,7 @@ IO的效率问题
 1. 不要有内存泄露
 2. 不要有写越界的现象
 3. 永远不要当做自己在写 main函数 而要把自己当成在写模块，尽量保证在调用这个模块前和调用模块后的环境保持一致.
- 
+
 
 
 ---
@@ -739,8 +719,6 @@ UFS 文件系统
 </table>
 
 
-
-
 #### utime
 
 `utime` 可以更改文件最后一次读和写的时间
@@ -905,13 +883,13 @@ C程序的存储空间布局
   + 调用exit
   + 调用_exit或_Exit
   + 最后一个线程从其启动进程中返回
-  + 最后一个线程调用pthread_exit
+  + 最后一个线程调用 `pthread_exit`
 + **异常终止**
-  + 调用abort
+  + 调用 `abort`
   + 接到一个信号并终止
   + 最后一个线程对其取消请求作出的响应
 
-atexit() 钩子函数
+`atexit()` 钩子函数
 
 
 + `exit();` 函数会将钩子函数,IO流数据刷新,等操作
@@ -943,8 +921,7 @@ atexit() 钩子函数
 <div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>
 我们知道 setenv 有覆盖的选项，如果原始串大小很小，而新覆盖的字符串很长，会不会发生溢出现象?
 </div>
-
-<font color='red' face=Monaco size=3>其实 setenv 这个函数会先将原来存放环境的那块空间给释放掉，然后再堆上重新申请空间，将新的环境变量的内容填充进去</font>
+<font color='red'>其实 setenv 这个函数会先将原来存放环境的那块空间给释放掉，然后再堆上重新申请空间，将新的环境变量的内容填充进去</font>
 
 ```c
 #include <stdio.h>
