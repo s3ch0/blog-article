@@ -743,7 +743,7 @@ xautolock -time 1 -locker slock &
 # pacman -S wmname
 然后你只需要用wmname来设置一个Java能识别的WM名称：
 
-$ wmname LG3D
+使用这条命令`$ wmname LG3D`
 这不是永久的，所以你可以把它写进.xinitrc。
 
 设置默认启动
@@ -758,3 +758,10 @@ xdg-mime query default inode/directory
 xdg-mime default Thunar-folder-handler.desktop inode/directory
 
 ```
+
+x11 协议下对显示器进行管理的命令 `xrandr`
+
+```bash
+xrandr --output HDMI-1 --auto --output eDP-1 --off
+```
+

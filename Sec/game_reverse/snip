@@ -1,0 +1,121 @@
+{
+	// Place your global snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"a":{
+		"prefix": "a",
+		"body": "<a href='$1'></a>",
+		"description": "the a link style"
+	},
+	"ul":{
+		"prefix": "ul",
+		"body": [
+			"<ul>",
+			"  <li>",
+			"  </li>",
+			"</ul>"
+		],
+		"description": "ul style"
+	},
+	"li":{
+		"prefix": "li",
+		"body": [
+			"  <li>",
+			"  </li>",
+		],
+		"description": "li style"
+	},
+
+	"Link template":{
+		"prefix": "l",
+		"body": "[$2]($1)",
+		"description": "The link template []()"
+	},
+	"red font template":{
+		"prefix": "f",
+		"body": "<font color='red' face=Monaco>$1</font>$2",
+		"description": "red font template"
+	},
+	"img list":{
+		"prefix": "imglist",
+		"body": [
+			"<table>",
+			"  <tr>",
+			"    <td><++></td>",
+			"    <td><++></td>",
+			"    <td><++></td>",
+			"  </tr>",
+			"  <tr>",
+			"    <td><img src='<++>' width='250px'></td>",
+			"    <td><img src='<++>' width='300px'></td>",
+			"    <td><img src='<++>' width='400px'></td>",
+			"  </tr>",
+			"</table>"
+		],
+		"description": "image list template"
+	},
+
+	"Center image template":{
+		"prefix": "cimg",
+		"body":[
+			"<div align='center'>",
+			"  <img src='<++>' width='60%' styles='text-align:center;'>",
+			"</div>"
+		],
+		"description": "The center type image template"
+
+	},
+
+	"Summary style template":{
+		"prefix": "sum",
+		"body":[
+			"<span style='color:blue'>",
+			"</span>",
+			"<details>",
+			"  <summary style='color:darkcyan'>",
+			"  <++>",
+			"  </summary>",
+			"  <p>",
+			"  <++>",
+			"  </p>",
+			"</details>"
+		],
+		"description": "Summary template"
+
+	},
+		
+	"Keyboard style template":{
+		"prefix": "k",
+		"body": "<kbd> <++> </kbd>",
+		"description": "keyboard style template"
+	},
+	"My Quote style template":{
+		"prefix": "q",
+		"body": [
+			"<div style='border-radius:15px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;'>",
+			"  <++>",
+			"  <div style='text-align:right;padding:0 15px;'>",
+			"    <++>",
+			"  </div>",
+			"</div>",
+		],
+		"description": "blue quote style"
+		
+	}
+
+
+
+}
