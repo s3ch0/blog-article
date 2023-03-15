@@ -17,8 +17,7 @@
 
 + [官方下载网站](https://archlinux.org/download/)
 + [阿里云镜像源](http://mirrors.aliyun.com/archlinux/iso/2022.03.01/)
-
-
++ 个人感觉还是[北京外国语大学的镜像源](https://mirrors.bfsu.edu.cn/archlinux/iso/latest/)最快 
 
 ### 烧录镜像
 
@@ -30,10 +29,15 @@
 
 <font color='red' face=Monaco size=3>如果使用默认的ISO镜像模式不能正确引导USB驱动器，则应该使用DD镜像模式进行烧录。</font> 
 
-当然你也可以在linux 里自己使用 DD 命令来进行手动烧录镜像.
+当然你也可以在linux 里自己使用 DD 命令来进行手动烧录镜像. 一个示例命令如下:
 
+```bash
+sudo dd if=./archlinux-2023.03.01-x86_64.iso of=/dev/sdc bs=4M conv=fsync
+```
 
 当你烧录完成之后，你还需要设置正确的电脑引导，进入 `BIOS/UEFI` 将 以 以 USB 启动这一项移动到最上方。 
+
+**如果安装的时候有 audit 记录，可以在启动界面内按 `e` 之后修改启动参数，在 Linux 这一行最后添加 audit = 0 这个参数**
 
 ## 安装前准备
 
@@ -44,7 +48,7 @@
 
 当你打开电脑获得了一个终端，默认的终端字体可能会比较小,我们可以使用一下命令来设 tty 终端字体 <font color='red' face=Monaco size=3>下面这个字体相对来讲比较大。</font> 
 
-默认字体路径 : `/usr/share/kbd/consolefonts/`
+默认 Console 字体路径 : `/usr/share/kbd/consolefonts/`
 
 ```zsh
 setfont /usr/share/kbd/consolefonts/LatGrkCyr-12x22.psfu.gz
@@ -84,7 +88,9 @@ keycode 58 = Escape
 loadkeys keys.conf # 让配置文件生效
 ```
 
-如果你习惯使用 `vim` 这个编辑器，那么你可以使用你自己的基础 vim 配置,来配置你的 vim ,<font color='darkcyan' face=Monaco size=3>配置文件名为 `.vimrc` 存放在家目录即可。</font> 
+如果你习惯使用 `vim` 这个编辑器，那么你可以使用你自己的基础 vim 配置,来配置你的 vim 
+
+<font color='darkcyan' face=Monaco size=3>配置文件名为 `.vimrc` 存放在家目录即可。</font> 
 
 从而让自己有一个好的编辑器的使用体验,毕竟安装 Arch Linux 需要一点时间，如果编辑器的使用体验不好，或者误操作的话，会极大程度影响我们安装系统。
 
@@ -94,15 +100,10 @@ noremap L $
 noremap H 0
 noremap J 5j
 noremap K 5k
+inoremap jk <ESC>
 noremap ; :
 noremap Q :q<CR>
 ```
-
-
-
-
-
-
 
 
 ### **设置网络**
@@ -217,8 +218,6 @@ fdisk -l
 
 <font color=red>按 m 查看帮助文档</font>
 
-
-
 ![Snipaste_20220304_223217.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/dbabd7e5d8d39e15250b7b110016f988.png)
 
 **常用 fdisk 命令说明**
@@ -230,17 +229,11 @@ fdisk -l
 + <kbd>g</kbd> : 创建 GPT 的分区表
 + <kbd>n</kbd> : 创建分区
 
-
-
 > 这边你需要根据你自己的需求来自己进行分区,和规划.<font color=red>下面我将把 Arch 装在整个电脑为例进行操作.</font>
 
 先使用 <kbd>g</kbd> 命令将当前所选设备合并成一个分区 ( 创建GPT的分区表 ) 
 
-这时候并不会真的写入到硬盘之中,只有我们运行了 <kbd>w</kbd> 后所做的操作才会真的写入到硬盘之中.
-
-
-
-
+<font color=red>这时候并不会真的写入到硬盘之中,只有我们运行了 <kbd>w</kbd> 后所做的操作才会真的写入到硬盘之中.</font>
 
 ![Snipaste_20220304_225046.png](http://zhouhao-blog.oss-cn-shanghai.aliyuncs.com/articles/2124b5a6c57a4374adb8c7a6392bd8ae.png)
 

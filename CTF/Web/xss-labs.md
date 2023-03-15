@@ -1,0 +1,255 @@
+## XSS-Labs 实验
+> 搭建环境
+
+我们在 linux 里只需要下载 php 然后在 xss-labs 目录下运行以下命令即可
+最好使用这条命令来运行服务,<font color='red'>而不要使用这个命令来运行服务 `php -S localhost:8000` 因为这个会导致burpsuite抓不到包。</font> 
+
+```bash
+# 在本地地8000端口在当前目录开放一个php服务
+php -S 127.0.0.1:8000 
+```
+
+![](./xss-labs.assets/1.png)
+
+如果你是使用我上面那个命令，并且环境，命令的执行并没有报错，那么你访问下面这个地址 `127.0.0.1:8000` 这个地址，将会显示以下界面。
+如果显示以下界面，就说明环境搭建成功了。
+
+如果你是在 Windows 平台，那么你可以使用 phpstudy 来快速搭建这个 xss-labs 靶场。
+具体的流程可以自行百度，这边就不进行演示和讲解了。
+
+这时我们访问本地的8000端口将会出现以下页面。
+
+![](./xss-labs.assets/2.png)
+
+### level1
+
+**我们想要进行 xss 攻击、注入那么肯定是需要先找到一个我们能进行输入、访问的接口。**
+
+但是在第一关内，我们并没有发现有任何的输入表单，或者是查询接口等访问服务器的接口。
+
+这时候我们查看一下该页面的 URL 发现存在一个 get 请求参数 `name=test`，而页面上也存在欢迎用户 test,并且也提示了 payload 的长度为 4.
+
+![](./xss-labs.assets/3.png)
+
+所以我们猜测我们穿的name参数的值可能会直接嵌入到html里。
+
+我们做一个测试，将test改成secho，发现页面上真出现了 欢迎用户secho。
+
+如下图:
+
+![](./xss-labs.assets/13.png)
+
+
+
+说明这是一个输入口，接下来我们构造一下xss的 payload,看看服务器对我们输入的内容有没有做过滤，编码或者消毒等操作。
+
+我们构造一个最简单的 `xss payload` 如下:
+```javascript
+<script>alert(1)</script>
+```
+
+发现服务器真的对我们的payload没有做过滤，直接就嵌入到页面源码内。
+
+![](./xss-labs.assets/14.png)
+
+发现 level1 就成功通关，是不是很简单？ :)
+
+![](./xss-labs.assets/4.png)
+
+### level2
+
+进入到网页之后，我们就能看见一个搜索的输入框，
+<font color='red'>看见输入框、表单、入口点我们就要想到这里能不能成为我们利用的入口。</font>
+
+所以我们很自然就输入了我们第一关的 `payload` , 在我们自己的预料之中，发现我们并没能通关。
+
+![](./xss-labs.assets/5.png)
+
+那我们就查看一下我们输入并回车之后的页面的源码，看看能不能在源码内发现一些问题。
+
+我们发现我们的 payload 被传到 input 标签中 value 属性中了。
+
+![](./xss-labs.assets/6.png)
+
+所以我们可以构造一个 新的 payload 让input 标签闭合，然后能让系统识别我们写的JS代码。具体构造方式 `(payload)` 如下：
+
+```javascript
+"><script>alert(1)</script>
+```
+
+![](./xss-labs.assets/7.png)
+
+![](./xss-labs.assets/15.png)
+
+其实我们还能通过以下方式来进行利用,对应的 payloads 如下：
+
+```php
+"onclick="javascript:alert(1)
+```
+
+![](./xss-labs.assets/17.png)
+
+### level3
+
+还是使用同样的方式来进行测试,发现我们输入的 payload 里的一些特殊字符串好像被服务器进行了编码。
+
+如下图所示：
+
+![](./xss-labs.assets/8.png)
+
+我们知道 php 里面有一些函数能将一些特殊符号编码掉。
+如 `htmlspecialchars()`
+
+![](./xss-labs.assets/10.png)
+
+经查询在默认一些PHP版本里，这个函数不转义单引号，所以我们可以构造以下 `payload` 
+
+```javascript
+'onclick='javascript:alert(1)
+```
+如果能成功构造，那么将会被添加一个点击事件，当我们点击网页将会触发 `alert(1)` 这个函数。
+
+![](./xss-labs.assets/9.png)
+
+
+---
+
+如果你使用单引号，系统默认会在单引号前面加一个转义字符。这是因为 php 版本的问题。
+
+这是因为 PHP 5.3.0 版本后，ENT_QUOTES 标志被视为默认行为的一部分，它会将双引号和单引号都编码为字符实体。因此，即使你没有显式地指定 ENT_QUOTES 标志，PHP 8.1.10 仍会将单引号编码为字符实体。
+
+如果说，你的php版本也存在相似的情况，你可以将源码对应位置，修改成如下：
+
+```php
+<input name=keyword  value='".htmlspecialchars($str,ENT_COMPAT)."'>	
+```
+
+![](./xss-labs.assets/16.png)
+
+### level4
+
+对于 level4 经过测试发现和前面的 level3 使用的是相同的原理。
+只是使用的是双引号`"` 对应的 payload 如下：
+
+![](./xss-labs.assets/11.png)
+
+```js
+"onclick"=javascript:alert(1)
+```
+
+![](./xss-labs.assets/18.png)
+
+### 编写自动化脚本
+
+我们发现我们会存在很多相同的操作
++ 如寻找测试点对测试点输入payload
++ 对其返回结果进行分析，判读其进行了怎样的过滤和编码
+
+> 编码方式多种多样，过滤方式也比较多，如果通过手动的方式很有可能造成测试不全，
+
+
+进行其实我们完全可以写一个自动测试脚本来提高我们的测试速度:
+以下是我使用python代码编写的自动化脚本的一段核心代码。
+
+<font color='red'>其实就是对设定好的测试点不断发送我们的 payload ，然后根据其返回结果去判断它对我们的payload做了怎样的过滤，消毒，编码等操作。 </font>
+
+
+```python
+
+    def load_payloads(self)->list:
+        assert(os.path.exists(self.payload_path))
+        with open(self.payload_path,'r') as fd:
+            # todo checking 
+            payloads = fd.readlines()
+        payloads = [payloads[i].rstrip('\n') for i in range(len(payloads))]
+        self.__payloads = payloads
+        return payloads
+
+
+    def inturder(self)->list: 
+        assert(len(self.payloads) > 0)
+        res_list = []
+        for i in range(len(self.payloads)):
+            response = requests.get(target_url+self.payloads[i])
+            res_html = response.content.decode("utf-8") .splitlines(keepends=True)
+            res_list.append(res_html)
+        self.__result = res_list
+        return res_list
+
+    def save_injected_html(self):
+        if os.path.exists(self.save_path):
+            raise ValueError(f"{self.save_path} already exists.")
+        os.makedirs(self.save_path)
+        for i in range(len(self.result)):
+            with open(os.path.join(self.save_path,'res'+str(i)),'w+',encoding='utf-8') as writer:
+                writer.writelines(self.result[i])
+
+    def circuit(self):
+        self.load_payloads()
+        self.inturder()
+        self.save_injected_html()
+```
+
+其它功能就是两个字符串的比较，然后对字符串进行颜色高亮等。
+
+完整代码可以在我的 github 主页内下载其下载链接 : https://github.com/zhouhaobusy/XssIntruder
+
+之后我们只需要构造 payload 即可,运行代码之后，我们就能尽可能猜测服务器对我们的 payload 进行了什么修改，消毒等操作。
+
+![](./xss-labs.assets/21.png)
+
+
+
+
+### level5
+
+我们使用我们的脚本进行简单的测试。
+
+我们可以发现我们之前的方式都不能成功利用了，直观来看它会将 `<script>` 替换成 `<scr_ipt>` 并且还会将大写转换成小写，字符串内存在 `on` 字样就会被 转换成`o_n` 所以我们不能使用以前的方式了。
+
+![](./xss-labs.assets/19.png)
+
+对于细节方面，<font color=red>其实我们要做的就是尽可能构造一些 payload 来判断服务器到底对我们的 payload 做了什么操作,比如以下的 payload 其实不是为了利用，而是为了判断过滤，消毒方式。</font>
+类似这种。
+
+```php
+<script> script onclick src sRc daTa OnFocus <sCriPt> <a hReF=javascript:alert()> &#106; '"
+```
+
+当我们使用我们的自动化脚本测试之后发现，它并不会对payload 里出现的 任何 script 都进行替换，而是将带有 `<script` 的字样进行替换，并且会将大小写转换成小写，转换成小写之后进行替换，`on`
+会被替换成 `o_n` 
+
+
+
+![](./xss-labs.assets/20.png)
+
+所以使用 `<script>` 标签和属性`onclick;onmouseover` 这种都是不行的了，查询一些资料之后，我们或许能通过超链接的方式来进行利用。
+
+对应payload如下
+
+```php
+"><a href="javascript:alert(1)
+```
+
+当输入完payload 之后，我们点一下链接这边是图片，即可过关
+
+![](./xss-labs.assets/12.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

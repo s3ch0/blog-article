@@ -111,6 +111,7 @@ ENIAC (1946.2.14；请在这个特殊的节日多陪陪你的电脑)
 </div>
 
 ---
+
 **电子计算机实现**
 - 逻辑门：真空电子管
 - 存储器：延迟线 (delay lines)
@@ -140,11 +141,15 @@ ENIAC 程序是用物理线路 “hard-wire” 的
 <div style="border-radius:10px;display:block;background-color:#a8dadc;border:2px solid #aaa;margin:15px;padding:10px;width:550px;">
 没有操作系统！
 </div></div>
+
 能把程序放上去就很了不起了!
 + 程序直接用指令操作硬件
 + 不需要画蛇添足的程序来管理它
+
 ---
+
 ### 1950s 的计算机
+
 更快更小的逻辑门 (晶体管)、更大的内存 (磁芯)、丰富的 I/O 设备
 + I/O 设备的速度已经严重低于处理器的速度，中断机制出现 (1953)
 <div align='center'>
